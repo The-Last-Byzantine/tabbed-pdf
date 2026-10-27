@@ -15,6 +15,8 @@ Everything runs on the device. Files are never uploaded.
 - **Tabs**: several PDFs open at once, with unsaved-change markers.
 - **Pages**: add blank page, insert pages from another PDF, delete, move (buttons or drag-and-drop),
   rotate left/right, set portrait or landscape, select several, export selected pages as a new PDF.
+- **Merge and split**: merge all open documents, in tab order, into one new document (the originals stay open);
+  split a document into one PDF per page.
 - **Annotate**: select/move/resize, highlight, freehand pen, text box, rectangle, ellipse, arrow.
   Six colours, four line widths, text sizes. Double-click a text box to edit it.
 - **Sign**: draw, type (three styles) or upload a signature image; place it on a page. Remembered on the device if you tick the box.

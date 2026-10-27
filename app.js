@@ -1393,6 +1393,61 @@ async function exportSelectedPages(tab) {
   }
 }
 
+// Merge every open document, in tab order, into one new document. The originals stay open.
+async function mergeOpenDocuments() {
+  const sources = state.tabs.slice();
+  if (sources.length < 2) return toast('Open at least two documents to merge them.', true);
+  const name = await askName('Merged.pdf');
+  if (!name) return;
+  const merged = newTab({ name, dirty: true });
+  try {
+    for (const src of sources) {
+      // Each source gets its own copy of its file data, so closing an original cannot break the merged document.
+      const remap = new Map();
+      for (const [srcId, s] of src.sources) {
+        const newId = 's' + uid();
+        remap.set(srcId, newId);
+        merged.sources.set(newId, { bytes: s.bytes, pdf: await loadPdfJs(s.bytes) });
+      }
+      for (const pg of src.pages) {
+        const copy = clone(pg);
+        copy.uid = uid();
+        if (copy.src) copy.src = remap.get(copy.src);
+        merged.pages.push(copy);
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    return toast('Could not merge the open documents.', true);
+  }
+  merged.current = 0;
+  merged.selPages = new Set([merged.pages[0].uid]);
+  addTab(merged);
+  toast(`Merged ${sources.length} documents into ${merged.pages.length} pages`);
+}
+
+// Save each page of the current document as its own PDF file.
+async function splitIntoPages(tab) {
+  if (!tab) return;
+  const n = tab.pages.length;
+  if (n < 2) return toast('This document has only one page.', true);
+  if (n > 20 && !window.confirm(`Split “${tab.name}” into ${n} files? Your browser may ask permission to download them all.`)) return;
+  const base = tab.name.replace(/\.pdf$/i, '');
+  const width = String(n).length;
+  try {
+    for (let i = 0; i < n; i++) {
+      const bytes = await exportBytes(tab, [tab.pages[i].uid]);
+      download(bytes, `${base}-${String(i + 1).padStart(width, '0')}.pdf`);
+      // Pause between downloads so the browser does not drop any of them.
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    }
+    toast(`Split into ${n} files`);
+  } catch (e) {
+    console.error(e);
+    toast('Split failed', true);
+  }
+}
+
 function askName(defaultName) {
   return new Promise((resolve) => {
     const dlg = $('#namedlg');
@@ -1668,6 +1723,8 @@ const COMMAND_ICONS = {
   "close-tab": "<rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2\"/><path d=\"M9 9l6 6M15 9l-6 6\"/>",
   "add-page": "<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"1.5\"/><path d=\"M12 8v8M8 12h8\"/>",
   "insert-pdf": "<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"1.5\"/><path d=\"M12 8v7M9 12.5l3 3 3-3\"/>",
+  "merge-open": "<path d=\"M4 4h6v5H4zM14 4h6v5h-6z\"/><path d=\"M7 9v3a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3V9\"/><path d=\"M12 15v5M9.5 17.5 12 20l2.5-2.5\"/>",
+  "split-pages": "<rect x=\"6\" y=\"3\" width=\"12\" height=\"7\" rx=\"1.2\"/><rect x=\"6\" y=\"14\" width=\"12\" height=\"7\" rx=\"1.2\"/><path d=\"M3 10.5h18\" stroke-dasharray=\"1.5 2\"/>",
   "rotate-left": "<path d=\"M4 12a8 8 0 1 0 2.4-5.7\"/><path d=\"M4 4v5h5\"/>",
   "rotate-right": "<path d=\"M20 12a8 8 0 1 1-2.4-5.7\"/><path d=\"M20 4v5h-5\"/>",
   "portrait": "<rect x=\"7\" y=\"3\" width=\"10\" height=\"18\" rx=\"1.5\"/>",
@@ -1705,6 +1762,8 @@ const COMMANDS = {
   'close-tab': () => { const t = tabOf(); if (t) closeTab(t); },
   'add-page': () => { const t = tabOf(); if (t) addBlankPage(t); },
   'insert-pdf': () => { if (tabOf()) $('#insertinput').click(); },
+  'merge-open': () => mergeOpenDocuments(),
+  'split-pages': () => splitIntoPages(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),
   portrait: () => orientSelected(tabOf(), 'portrait'),
