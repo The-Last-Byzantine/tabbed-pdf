@@ -2,6 +2,8 @@
 
 Live version: https://tabbedpdf.pages.dev/
 
+Also see our landing page and other apps: https://tabbedapps.pages.dev
+
 A browser-based PDF editor: open, create, save, annotate, sign, add symbols,
 rearrange pages, rotate them, and export. Same layout as Tabbed Word, in orange.
 Everything runs on the device. Files are never uploaded.
