@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#9a3412">
+<meta name="application-name" content="Tabbed PDF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tabbed PDF">
+<meta name="description" content="Tabbed PDF: open, create, annotate, sign, rearrange and export PDF files in your browser. Nothing leaves your device.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Tabbed PDF</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>Tabbed PDF</h1>
+    <small>Local editing · Open · Create · Annotate · Sign · Export</small>
+  </div>
+  <span id="filename">No document open</span>
+</header>
+
+<div id="appstate">
+  <span id="offlinestate">Local editing. Files never leave this device.</span>
+  <button id="updateapp" hidden>Update app</button>
+</div>
+
+<div id="ribbon-tabs" role="tablist" aria-label="Ribbon sections">
+  <button role="tab" class="selected" data-panel="home" aria-selected="true" title="Home: open, save, undo, export"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home</button>
+  <button role="tab" data-panel="pages" aria-selected="false" title="Pages: add, insert, rotate, move, delete"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="11" height="14" rx="1.5"/><path d="M4 7v12a1 1 0 0 0 1 1h10"/></svg>Pages</button>
+  <button role="tab" data-panel="annotate" aria-selected="false" title="Annotate: highlight, pen, text, shapes"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>Annotate</button>
+  <button role="tab" data-panel="sign" aria-selected="false" title="Sign and symbols"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c2-4 3-8 5-8s1 6 3 5 2-4 4-4 1 3 3 3 2-1 3-2"/><path d="M3 20h18"/></svg>Sign &amp; symbols</button>
+  <button role="tab" data-panel="view" aria-selected="false" title="View: zoom and page list"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>View</button>
+  <button type="button" id="aboutbtn" class="info-btn" title="About Tabbed PDF, keyboard shortcuts and credits" aria-label="About Tabbed PDF, keyboard shortcuts and credits" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01"/></svg></button>
+</div>
+
+<nav id="toolbar" aria-label="Ribbon commands">
+  <div class="panel selected" data-panel="home">
+    <button data-act="new" class="primary" title="New blank document (Ctrl+N)">New</button>
+    <button data-act="open" title="Open a PDF (Ctrl+O)">Open</button>
+    <button data-act="save" class="primary" title="Save (Ctrl+S). Writes back to the same file where the browser allows it.">Save</button>
+    <button data-act="saveas" title="Save a new copy (Ctrl+Shift+S)">Save as…</button>
+    <button data-act="export-selected" title="Export only the selected pages as a new PDF">Export selected pages</button>
+    <span class="sep"></span>
+    <button data-act="undo" title="Undo (Ctrl+Z)">Undo</button>
+    <button data-act="redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
+    <span class="sep"></span>
+    <button data-act="close-tab" title="Close this document">Close document</button>
+  </div>
+
+  <div class="panel" data-panel="pages">
+    <button data-act="add-page" title="Add a blank page after the current page">Add blank page</button>
+    <button data-act="insert-pdf" title="Insert all pages of another PDF after the current page">Insert PDF…</button>
+    <span class="sep"></span>
+    <button data-act="rotate-left" title="Rotate selected pages 90° counter-clockwise">Rotate left</button>
+    <button data-act="rotate-right" title="Rotate selected pages 90° clockwise">Rotate right</button>
+    <button data-act="portrait" title="Make selected pages portrait">Portrait</button>
+    <button data-act="landscape" title="Make selected pages landscape">Landscape</button>
+    <span class="sep"></span>
+    <button data-act="move-up" title="Move selected pages up">Move up</button>
+    <button data-act="move-down" title="Move selected pages down">Move down</button>
+    <span class="sep"></span>
+    <button data-act="delete-pages" title="Delete selected pages (Delete key)">Delete pages</button>
+    <button data-act="select-all" title="Select all pages (Ctrl+A)">Select all</button>
+  </div>
+
+  <div class="panel" data-panel="annotate">
+    <div class="tool-group" role="radiogroup" aria-label="Annotation tools">
+      <button data-tool="select" class="tool selected" title="Select and move (V)">Select</button>
+      <button data-tool="highlight" class="tool" title="Highlight (H)">Highlight</button>
+      <button data-tool="ink" class="tool" title="Freehand pen (P)">Pen</button>
+      <button data-tool="text" class="tool" title="Text box (T)">Text</button>
+      <button data-tool="rect" class="tool" title="Rectangle (R)">Rectangle</button>
+      <button data-tool="ellipse" class="tool" title="Ellipse (E)">Ellipse</button>
+      <button data-tool="arrow" class="tool" title="Arrow (A)">Arrow</button>
+    </div>
+    <span class="sep"></span>
+    <span class="label">Colour</span>
+    <div class="swatches" id="swatches" role="radiogroup" aria-label="Colour"></div>
+    <span class="sep"></span>
+    <label class="label" for="stroke">Line</label>
+    <select id="stroke" title="Line width">
+      <option value="1">Thin</option>
+      <option value="2" selected>Medium</option>
+      <option value="4">Thick</option>
+      <option value="7">Heavy</option>
+    </select>
+    <label class="label" for="fontsize">Text</label>
+    <select id="fontsize" title="Text size">
+      <option value="10">10 pt</option>
+      <option value="12">12 pt</option>
+      <option value="14" selected>14 pt</option>
+      <option value="18">18 pt</option>
+      <option value="24">24 pt</option>
+      <option value="36">36 pt</option>
+    </select>
+    <span class="sep"></span>
+    <button data-act="delete-item" title="Delete the selected annotation (Delete key)">Delete annotation</button>
+  </div>
+
+  <div class="panel" data-panel="sign">
+    <button data-act="signature" class="primary" title="Create, type or upload a signature">Create signature…</button>
+    <button data-tool="sign" class="tool" title="Click on a page to place the chosen signature">Place signature</button>
+    <span class="sep"></span>
+    <span class="label">Symbol</span>
+    <div class="tool-group symbols" role="radiogroup" aria-label="Symbols" id="symbols"></div>
+    <span class="sep"></span>
+    <span class="hint" id="sigstatus">No signature yet.</span>
+  </div>
+
+  <div class="panel" data-panel="view">
+    <button data-act="zoom-out" title="Zoom out (-)">Zoom out</button>
+    <button data-act="zoom-in" title="Zoom in (+)">Zoom in</button>
+    <button data-act="zoom-100" title="100 %">100%</button>
+    <button data-act="zoom-fit" title="Fit page width">Fit width</button>
+    <span class="sep"></span>
+    <button data-act="toggle-thumbs" title="Show or hide the page list">Pages panel</button>
+  </div>
+</nav>
+
+<div id="tabs" class="tabs" role="tablist" aria-label="Open documents"></div>
+
+<main id="main">
+  <aside id="thumbs" aria-label="Page list">
+    <div id="thumblist"></div>
+  </aside>
+  <section id="viewer" aria-label="Document">
+    <div id="empty" class="empty">
+      <h2>Open a PDF, or start a blank document</h2>
+      <p>Drop a PDF anywhere on this page, or use the buttons below.</p>
+      <div class="empty-actions">
+        <button data-act="open" class="primary">Open PDF</button>
+        <button data-act="new">New blank document</button>
+      </div>
+      <p class="fine">Files stay on this device. Nothing is uploaded.</p>
+    </div>
+    <div id="pages" hidden></div>
+  </section>
+</main>
+
+<footer id="statusbar">
+  <span id="stat-pages">0 pages</span>
+  <span id="stat-page">—</span>
+  <span id="stat-zoom">100%</span>
+  <span id="stat-tool">Select</span>
+  <span id="stat-dirty"></span>
+  <span class="ver">Tabbed PDF v0.2 · local</span>
+</footer>
+
+<dialog id="namedlg" aria-labelledby="namedlg-title">
+  <form method="dialog" id="nameform">
+    <h2 id="namedlg-title">Save as</h2>
+    <label for="newname">File name</label>
+    <input id="newname" required autocomplete="off">
+    <div class="dialog-actions">
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button value="ok" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="sigdlg" aria-labelledby="sigdlg-title">
+  <form method="dialog" id="sigform">
+    <h2 id="sigdlg-title">Create signature</h2>
+    <div class="sig-tabs" role="tablist">
+      <button type="button" role="tab" class="selected" data-sigtab="draw">Draw</button>
+      <button type="button" role="tab" data-sigtab="type">Type</button>
+      <button type="button" role="tab" data-sigtab="image">Upload image</button>
+    </div>
+    <div class="sig-panel" data-sigpanel="draw">
+      <canvas id="sigpad" width="520" height="200" aria-label="Draw your signature here"></canvas>
+      <div class="row"><button type="button" id="sigclear">Clear</button></div>
+    </div>
+    <div class="sig-panel" data-sigpanel="type" hidden>
+      <input id="sigtext" placeholder="Your name" autocomplete="off">
+      <select id="sigfont" aria-label="Signature style">
+        <option value="cursive">Cursive</option>
+        <option value="serif">Serif italic</option>
+        <option value="mono">Monospace</option>
+      </select>
+      <canvas id="sigtypecanvas" width="520" height="200" aria-label="Typed signature preview"></canvas>
+    </div>
+    <div class="sig-panel" data-sigpanel="image" hidden>
+      <input id="sigfile" type="file" accept="image/png,image/jpeg">
+      <p class="fine">A PNG with a transparent background looks best.</p>
+    </div>
+    <label class="check"><input type="checkbox" id="sigsave" checked> Remember on this device</label>
+    <div class="dialog-actions">
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button type="button" class="primary" id="sigok">Use signature</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="aboutdlg" aria-labelledby="aboutdlg-title">
+  <form method="dialog" class="about">
+    <h2 id="aboutdlg-title">About Tabbed PDF</h2>
+    <p class="fine">Version 0.2 · Same layout as Tabbed Word and Tabbed Slides.</p>
+    <p>Open, create, annotate, sign, rearrange and export PDF files in your browser. Nothing leaves your device.</p>
+    <h3>Keyboard shortcuts</h3>
+    <table class="shortcuts">
+      <tr><th>Key</th><th>Action</th></tr>
+      <tr><td>Ctrl/Cmd + O / N / S</td><td>Open / New / Save</td></tr>
+      <tr><td>Ctrl/Cmd + Shift + S</td><td>Save as</td></tr>
+      <tr><td>Ctrl/Cmd + Z, Ctrl/Cmd + Shift + Z</td><td>Undo / redo</td></tr>
+      <tr><td>Ctrl/Cmd + A</td><td>Select all pages</td></tr>
+      <tr><td>V H P T R E A</td><td>Select, Highlight, Pen, Text, Rectangle, Ellipse, Arrow</td></tr>
+      <tr><td>+ / −</td><td>Zoom in / out</td></tr>
+      <tr><td>Delete</td><td>Delete selected annotation</td></tr>
+      <tr><td>Esc</td><td>Back to Select tool, clear selection</td></tr>
+    </table>
+    <h3>Credits</h3>
+    <p class="fine">pdf.js 4.10.38 (rendering) · pdf-lib 1.17.1 (editing and export) · @pdf-lib/fontkit 1.1.1 · DejaVu Sans (typed text). Licences: third-party-licenses.txt.</p>
+    <div class="dialog-actions"><button value="close" class="primary">Close</button></div>
+  </form>
+</dialog>
+
+<input type="file" id="fileinput" accept=".pdf,application/pdf" hidden>
+<input type="file" id="insertinput" accept=".pdf,application/pdf" hidden>
+
+<script src="vendor/pdf-lib/pdf-lib.min.js"></script>
+<script src="vendor/fontkit/fontkit.umd.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

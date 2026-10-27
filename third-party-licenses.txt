@@ -1,0 +1,18 @@
+Tabbed PDF bundles the following third-party software.
+
+pdf.js (vendor/pdfjs/)  version 4.10.38
+  Copyright (c) Mozilla and contributors. Licensed under the Apache License, Version 2.0.
+  Includes cmaps and standard_fonts data from the same package.
+  https://github.com/mozilla/pdf.js
+
+pdf-lib (vendor/pdf-lib/)  version 1.17.1
+  Copyright (c) 2019 Andrew Dillon. Licensed under the MIT License.
+  https://github.com/Hopding/pdf-lib
+
+@pdf-lib/fontkit (vendor/fontkit/)  version 1.1.1
+  Copyright (c) Devon Govett. Licensed under the MIT License.
+  https://github.com/Hopding/fontkit
+
+DejaVu Sans (vendor/fonts/DejaVuSans.ttf)  DejaVu fonts 2.37
+  Licensed under the Bitstream Vera Free Font License and public domain terms.
+  See vendor/fonts/LICENSE.
