@@ -1426,25 +1426,30 @@ async function mergeOpenDocuments() {
   toast(`Merged ${sources.length} documents into ${merged.pages.length} pages`);
 }
 
-// Save each page of the current document as its own PDF file.
-async function splitIntoPages(tab) {
+// Save pages as separate PDF files, one per page. Default: every page of the document.
+// Pass uids to save only those pages (for example the current selection). File names
+// carry the page's position in the document, so they stay in order.
+async function splitIntoPages(tab, uids = null) {
   if (!tab) return;
-  const n = tab.pages.length;
-  if (n < 2) return toast('This document has only one page.', true);
-  if (n > 20 && !window.confirm(`Split “${tab.name}” into ${n} files? Your browser may ask permission to download them all.`)) return;
+  const wanted = uids ? tab.pages.filter((p) => uids.includes(p.uid)) : tab.pages;
+  const n = wanted.length;
+  if (!n) return toast('No pages selected.', true);
+  if (!uids && n < 2) return toast('This document has only one page.', true);
+  if (n > 20 && !window.confirm(`Save ${n} separate PDF files? Your browser may ask permission to download them all.`)) return;
   const base = tab.name.replace(/\.pdf$/i, '');
-  const width = String(n).length;
+  const width = String(tab.pages.length).length;
   try {
-    for (let i = 0; i < n; i++) {
-      const bytes = await exportBytes(tab, [tab.pages[i].uid]);
-      download(bytes, `${base}-${String(i + 1).padStart(width, '0')}.pdf`);
+    for (const pg of wanted) {
+      const position = tab.pages.indexOf(pg) + 1;
+      const bytes = await exportBytes(tab, [pg.uid]);
+      download(bytes, `${base}-${String(position).padStart(width, '0')}.pdf`);
       // Pause between downloads so the browser does not drop any of them.
       await new Promise((resolve) => setTimeout(resolve, 350));
     }
-    toast(`Split into ${n} files`);
+    toast(`Saved ${n} separate file${n === 1 ? '' : 's'}`);
   } catch (e) {
     console.error(e);
-    toast('Split failed', true);
+    toast('Saving separate files failed', true);
   }
 }
 
@@ -1724,6 +1729,7 @@ const COMMAND_ICONS = {
   "add-page": "<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"1.5\"/><path d=\"M12 8v8M8 12h8\"/>",
   "insert-pdf": "<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"1.5\"/><path d=\"M12 8v7M9 12.5l3 3 3-3\"/>",
   "merge-open": "<path d=\"M4 4h6v5H4zM14 4h6v5h-6z\"/><path d=\"M7 9v3a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3V9\"/><path d=\"M12 15v5M9.5 17.5 12 20l2.5-2.5\"/>",
+  "save-separate": "<path d=\"M5 5h7v6H5zM12 13h7v6h-7z\"/><path d=\"M9 11v3h3M15 13v-2\"/><path d=\"M3 19h18\" stroke-dasharray=\"1.5 2\"/>",
   "split-pages": "<rect x=\"6\" y=\"3\" width=\"12\" height=\"7\" rx=\"1.2\"/><rect x=\"6\" y=\"14\" width=\"12\" height=\"7\" rx=\"1.2\"/><path d=\"M3 10.5h18\" stroke-dasharray=\"1.5 2\"/>",
   "rotate-left": "<path d=\"M4 12a8 8 0 1 0 2.4-5.7\"/><path d=\"M4 4v5h5\"/>",
   "rotate-right": "<path d=\"M20 12a8 8 0 1 1-2.4-5.7\"/><path d=\"M20 4v5h-5\"/>",
@@ -1764,6 +1770,7 @@ const COMMANDS = {
   'insert-pdf': () => { if (tabOf()) $('#insertinput').click(); },
   'merge-open': () => mergeOpenDocuments(),
   'split-pages': () => splitIntoPages(tabOf()),
+  'save-separate': () => { const t = tabOf(); if (t) splitIntoPages(t, selectedPageUids(t)); },
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),
   portrait: () => orientSelected(tabOf(), 'portrait'),
