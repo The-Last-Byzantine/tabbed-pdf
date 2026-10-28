@@ -1,26 +1,26 @@
-/* Tabbed PDF: Tabbed Word's layout, orange palette.
-   Orange scale: 50 #fff7ed · 100 #ffedd5 · 200 #fed7aa · 300 #fdba74 · 400 #fb923c
-                 500 #f97316 · 600 #ea580c · 700 #c2410c · 800 #9a3412 · 900 #7c2d12 · 950 #431407 */
+/* Tabbed PDF: Tabbed Word's layout, red palette (v0.3; the --o* names are kept from the orange version).
+   Red scale: 50 #fef2f2 · 100 #fee2e2 · 200 #fecaca · 300 #fca5a5 · 400 #f87171
+                 500 #ef4444 · 600 #dc2626 · 700 #b91c1c · 800 #991b1b · 900 #7f1d1d · 950 #450a0a */
 :root {
-  --o50: #fff7ed;
-  --o100: #ffedd5;
-  --o200: #fed7aa;
-  --o300: #fdba74;
-  --o400: #fb923c;
-  --o500: #f97316;
-  --o600: #ea580c;
-  --o700: #c2410c;
-  --o800: #9a3412;
-  --o900: #7c2d12;
-  --o950: #431407;
+  --o50: #fef2f2;
+  --o100: #fee2e2;
+  --o200: #fecaca;
+  --o300: #fca5a5;
+  --o400: #f87171;
+  --o500: #ef4444;
+  --o600: #dc2626;
+  --o700: #b91c1c;
+  --o800: #991b1b;
+  --o900: #7f1d1d;
+  --o950: #450a0a;
 
-  --bg: #fff7ed;
-  --ink: #431407;
-  --muted: #8a5a44;
-  --ribbon: #fffbf6;
-  --ribbon-border: #f3d3b4;
-  --viewer-bg: #ecdccd;
-  --header: #7c2d12;
+  --bg: #fef2f2;
+  --ink: #450a0a;
+  --muted: #7a4b4b;
+  --ribbon: #fff6f6;
+  --ribbon-border: #ecd2d2;
+  --viewer-bg: #ede4e4;
+  --header: #7f1d1d;
   --accent: var(--o700);
   --accent-hover: var(--o800);
   --focus: var(--o500);
@@ -28,25 +28,25 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1c0f08;
-    --ink: #ffedd5;
-    --muted: #d6a384;
-    --ribbon: #2a150c;
-    --ribbon-border: #5a2c17;
-    --viewer-bg: #2b180f;
-    --header: #431407;
+    --bg: #1c0808;
+    --ink: #fee2e2;
+    --muted: #d68484;
+    --ribbon: #2a0c0c;
+    --ribbon-border: #5a1717;
+    --viewer-bg: #2b0f0f;
+    --header: #450a0a;
     --accent: var(--o500);
     --accent-hover: var(--o400);
   }
 }
 :root[data-theme="dark"] {
-  --bg: #1c0f08;
-  --ink: #ffedd5;
-  --muted: #d6a384;
-  --ribbon: #2a150c;
-  --ribbon-border: #5a2c17;
-  --viewer-bg: #2b180f;
-  --header: #431407;
+  --bg: #1c0808;
+  --ink: #fee2e2;
+  --muted: #d68484;
+  --ribbon: #2a0c0c;
+  --ribbon-border: #5a1717;
+  --viewer-bg: #2b0f0f;
+  --header: #450a0a;
   --accent: var(--o500);
   --accent-hover: var(--o400);
 }
@@ -142,7 +142,7 @@ header small { display: block; opacity: .82; font-size: 11px; margin-top: 2px; }
   cursor: pointer;
 }
 :root[data-theme="dark"] #toolbar button,
-:root[data-theme="dark"] #toolbar select { background: #3a1e11; border-color: #5a2c17; }
+:root[data-theme="dark"] #toolbar select { background: #3a1111; border-color: #5a1717; }
 #toolbar button:hover, #toolbar select:hover { background: var(--o100); }
 #toolbar button:focus-visible, #toolbar select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 #toolbar button:disabled { opacity: .45; cursor: default; background: #fff; }
@@ -189,14 +189,14 @@ header small { display: block; opacity: .82; font-size: 11px; margin-top: 2px; }
   border: 1px solid var(--o200);
   border-bottom: 0;
   border-radius: 8px 8px 0 0;
-  background: #fff6ec;
+  background: #ffecec;
   color: var(--muted);
   font-size: 13px;
   white-space: nowrap;
   cursor: pointer;
   flex-shrink: 0;
 }
-:root[data-theme="dark"] .doc-tab { background: #2a150c; border-color: #5a2c17; }
+:root[data-theme="dark"] .doc-tab { background: #2a0c0c; border-color: #5a1717; }
 .doc-tab .tname { overflow: hidden; text-overflow: ellipsis; }
 .doc-tab.active { background: #fff; color: var(--ink); font-weight: 600; border-color: var(--o400); }
 :root[data-theme="dark"] .doc-tab.active { background: var(--viewer-bg); }
@@ -242,9 +242,9 @@ main {
   -webkit-user-select: none;
 }
 .thumb:hover { background: var(--o50); }
-:root[data-theme="dark"] .thumb:hover { background: #3a1e11; }
+:root[data-theme="dark"] .thumb:hover { background: #3a1111; }
 .thumb.sel { border-color: var(--o500); background: var(--o100); }
-:root[data-theme="dark"] .thumb.sel { background: #4a2414; }
+:root[data-theme="dark"] .thumb.sel { background: #4a1414; }
 .thumb.current .thumb-canvas-wrap { box-shadow: 0 0 0 1px var(--o600); }
 .thumb.drop-before { box-shadow: 0 -4px 0 0 var(--o600); }
 .thumb.drop-after { box-shadow: 0 4px 0 0 var(--o600); }
@@ -286,7 +286,7 @@ main {
 .page {
   position: relative;
   background: #fff;
-  box-shadow: 0 2px 10px #7c2d1233;
+  box-shadow: 0 2px 10px #7f1d1d33;
   flex-shrink: 0;
   user-select: none;
   -webkit-user-select: none;
@@ -332,7 +332,7 @@ main {
   cursor: text;
 }
 .page .txt.sel { border-color: var(--o600); background: #fff8; }
-.page .txt[contenteditable="true"]:focus { border-color: var(--o600); background: #fffbf5cc; }
+.page .txt[contenteditable="true"]:focus { border-color: var(--o600); background: #fff5f5cc; }
 .page .txt.dragging { cursor: move; }
 
 .empty {
@@ -379,10 +379,10 @@ dialog {
   width: min(560px, 94vw);
   background: #fff;
   color: var(--ink);
-  box-shadow: 0 20px 50px #43140766;
+  box-shadow: 0 20px 50px #450a0a66;
 }
-dialog::backdrop { background: #431407aa; }
-:root[data-theme="dark"] dialog { background: #2a150c; }
+dialog::backdrop { background: #450a0aaa; }
+:root[data-theme="dark"] dialog { background: #2a0c0c; }
 dialog h2 { margin: 0 0 12px; font-size: 18px; }
 dialog label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 4px; }
 dialog input[type="text"], dialog input:not([type]), #sigtext {
@@ -432,7 +432,7 @@ dialog select, #sigfont { min-height: 36px; padding: 6px 8px; border-radius: 6px
   #appstate, #statusbar { padding-left: 14px; padding-right: 14px; }
   #ribbon-tabs { padding: 0 9px; }
   #ribbon-tabs button { padding: 9px 11px; font-size: 12px; }
-  #toolbar { padding: 8px 9px; position: sticky; top: 0; box-shadow: 0 2px 7px #7c2d1222; }
+  #toolbar { padding: 8px 9px; position: sticky; top: 0; box-shadow: 0 2px 7px #7f1d1d22; }
   #toolbar button, #toolbar select { min-height: 44px; font-size: 14px; }
   main { flex-direction: column; }
   #thumbs {
@@ -462,11 +462,54 @@ body.ribbon-off #toolbar { display: none; }
 #toolbar button.ic { width: 38px; min-width: 38px; height: 38px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 #toolbar button.ic svg { width: 21px; height: 21px; display: block; }
 #toolbar button.ic.primary { width: 38px; }
-#statusbar { position: sticky; bottom: 0; z-index: 10; background: var(--header); color: #ffe9dc; border-top: 0; }
-#statusbar .ver { margin-left: auto; color: #fbd3b5; }
-#stat-dirty { color: #ffd29a; }
+#statusbar { position: sticky; bottom: 0; z-index: 10; background: var(--header); color: #ffdcdc; border-top: 0; }
+#statusbar .ver { margin-left: auto; color: #f7cfcf; }
+#stat-dirty { color: #fecaca; }
 dialog.about-dialog { width: min(600px, 94vw); }
 dialog table.shortcuts { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0 12px; }
 dialog table.shortcuts th, dialog table.shortcuts td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--o100); vertical-align: top; }
 dialog h3 { font-size: 14px; margin: 14px 0 0; }
 dialog .fine { font-size: 12px; }
+
+/* v0.3: red theme of the Tabbed family. Wine band (header, status line and ribbon tabs), light command bar,
+   rose-grey around the pages. Same pattern as Tabbed Word (navy) and Tabbed Slides (orange). */
+:root { --on-band: #f7d4d4; }
+#appstate { background: var(--header); color: var(--on-band); border-bottom: 0; padding-top: 0; }
+#ribbon-tabs { background: var(--header); border-bottom: 0; }
+#ribbon-tabs button { color: var(--on-band); border-bottom: 0; border-radius: 6px 6px 0 0; }
+#ribbon-tabs button:hover { color: #fff; background: rgba(255, 255, 255, .1); }
+#ribbon-tabs button.selected { color: var(--header); background: var(--ribbon); box-shadow: inset 0 3px var(--o500); }
+:root[data-theme="dark"] #ribbon-tabs button.selected { color: var(--ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #ribbon-tabs button.selected { color: var(--ink); } }
+#ribbon-tabs .info-btn { color: var(--on-band); }
+#ribbon-tabs .info-btn:hover { color: #fff; }
+#ribbon-tabs button:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+.tabs { background: var(--viewer-bg); }
+dialog .about a, form.about a { color: var(--accent); }
+
+/* v0.3: dark mode for the controls. Before, these rules applied only to an in-app dark setting the app does not have,
+   so with the system in dark mode the buttons stayed white with light icons. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) #toolbar button:not(.primary), :root:not([data-theme="light"]) #toolbar select, :root:not([data-theme="light"]) #toolbar input { background: #3a1111; border-color: #5a1717; color: var(--ink); }
+  :root:not([data-theme="light"]) #toolbar button:not(.primary):not(:disabled):hover, :root:not([data-theme="light"]) #toolbar select:hover { background: #4a1414; }
+  :root:not([data-theme="light"]) #toolbar button:disabled:not(.primary) { background: #3a1111; }
+  :root:not([data-theme="light"]) .doc-tab { background: #2a0c0c; border-color: #5a1717; }
+  :root:not([data-theme="light"]) .doc-tab.active { background: var(--viewer-bg); color: var(--ink); }
+  :root:not([data-theme="light"]) .doc-tab .x:hover { background: #4a1414; }
+  :root:not([data-theme="light"]) .thumb:hover { background: #3a1111; }
+  :root:not([data-theme="light"]) .thumb.sel { background: #4a1414; }
+  :root:not([data-theme="light"]) #stat-dirty { color: var(--o300); }
+  :root:not([data-theme="light"]) dialog { background: #2a0c0c; color: var(--ink); }
+  :root:not([data-theme="light"]) .empty-actions button:not(.primary) { background: #3a1111; border-color: #5a1717; color: var(--ink); }
+}
+:root[data-theme="dark"] #toolbar button:not(.primary), :root[data-theme="dark"] #toolbar select, :root[data-theme="dark"] #toolbar input { background: #3a1111; border-color: #5a1717; color: var(--ink); }
+:root[data-theme="dark"] #toolbar button:not(.primary):not(:disabled):hover, :root[data-theme="dark"] #toolbar select:hover { background: #4a1414; }
+:root[data-theme="dark"] #toolbar button:disabled:not(.primary) { background: #3a1111; }
+:root[data-theme="dark"] .doc-tab { background: #2a0c0c; border-color: #5a1717; }
+:root[data-theme="dark"] .doc-tab.active { background: var(--viewer-bg); color: var(--ink); }
+:root[data-theme="dark"] .doc-tab .x:hover { background: #4a1414; }
+:root[data-theme="dark"] .thumb:hover { background: #3a1111; }
+:root[data-theme="dark"] .thumb.sel { background: #4a1414; }
+:root[data-theme="dark"] #stat-dirty { color: var(--o300); }
+:root[data-theme="dark"] dialog { background: #2a0c0c; color: var(--ink); }
+:root[data-theme="dark"] .empty-actions button:not(.primary) { background: #3a1111; border-color: #5a1717; color: var(--ink); }

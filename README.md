@@ -5,7 +5,7 @@ Live version: https://tabbedpdf.pages.dev/
 Also see our landing page and other apps: https://tabbedapps.pages.dev
 
 A browser-based PDF editor: open, create, save, annotate, sign, add symbols,
-rearrange pages, rotate them, and export. Same layout as Tabbed Word, in orange.
+rearrange pages, rotate them, and export. Same layout as Tabbed Word, in red.
 Everything runs on the device. Files are never uploaded.
 
 ## Features
@@ -42,7 +42,7 @@ Everything runs on the device. Files are never uploaded.
 
 ```
 index.html        app shell (CSP: no inline scripts, no network except the app's own files)
-styles.css        orange theme (Tailwind orange scale as CSS variables)
+styles.css        red theme (Tailwind red scale as CSS variables)
 app.js            all application logic (ES module)
 sw.js             service worker for offline use
 manifest.webmanifest, icons/, _headers   PWA and Cloudflare Pages headers

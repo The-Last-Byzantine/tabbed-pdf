@@ -423,13 +423,13 @@ function selectionEl(item, z) {
   const g = svgEl('g', { class: 'selection', 'pointer-events': 'none' });
   g.append(svgEl('rect', {
     x: b.x - 2 / z, y: b.y - 2 / z, width: b.w + 4 / z, height: b.h + 4 / z,
-    fill: 'none', stroke: '#ea580c', 'stroke-width': 1.25, 'stroke-dasharray': '4 3', 'vector-effect': 'non-scaling-stroke',
+    fill: 'none', stroke: '#dc2626', 'stroke-width': 1.25, 'stroke-dasharray': '4 3', 'vector-effect': 'non-scaling-stroke',
   }));
   if (!['ink', 'arrow'].includes(item.type)) {
     const hs = 9 / z;
     g.append(svgEl('rect', {
       x: b.x + b.w - hs / 2, y: b.y + b.h - hs / 2, width: hs, height: hs,
-      fill: '#ea580c', stroke: '#fff', 'stroke-width': 1 / z, 'data-handle': 'se', style: 'pointer-events:all; cursor:nwse-resize',
+      fill: '#dc2626', stroke: '#fff', 'stroke-width': 1 / z, 'data-handle': 'se', style: 'pointer-events:all; cursor:nwse-resize',
     }));
   }
   return g;
@@ -1799,11 +1799,11 @@ function toast(message, isError = false) {
     note = el('div', 'toast');
     note.id = 'toast';
     note.setAttribute('role', 'status');
-    note.style.cssText = 'position:fixed;left:50%;bottom:52px;transform:translateX(-50%);background:#431407;color:#fff7ed;padding:9px 16px;border-radius:8px;font:14px system-ui;z-index:50;box-shadow:0 8px 24px #43140766;max-width:90vw;text-align:center';
+    note.style.cssText = 'position:fixed;left:50%;bottom:52px;transform:translateX(-50%);background:#450a0a;color:#fef2f2;padding:9px 16px;border-radius:8px;font:14px system-ui;z-index:50;box-shadow:0 8px 24px #450a0a66;max-width:90vw;text-align:center';
     document.body.append(note);
   }
   note.textContent = message;
-  note.style.background = isError ? '#9a3412' : '#431407';
+  note.style.background = isError ? '#991b1b' : '#450a0a';
   note.hidden = false;
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => { note.hidden = true; }, 3600);

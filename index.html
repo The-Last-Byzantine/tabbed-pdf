@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#9a3412">
+<meta name="theme-color" content="#7f1d1d">
 <meta name="application-name" content="Tabbed PDF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tabbed PDF">
@@ -12,9 +12,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Tabbed PDF</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/tabbed-pdf.svg" type="image/svg+xml">
+<link rel="icon" href="icons/tabbed-pdf-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icons/tabbed-pdf-16.png" sizes="16x16" type="image/png">
+<link rel="shortcut icon" href="icons/tabbed-pdf.ico">
+<link rel="apple-touch-icon" href="icons/tabbed-pdf-180.png">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -153,7 +155,7 @@
   <span id="stat-zoom">100%</span>
   <span id="stat-tool">Select</span>
   <span id="stat-dirty"></span>
-  <span class="ver">Tabbed PDF v0.2 · local</span>
+  <span class="ver">Tabbed PDF v0.3 · local</span>
 </footer>
 
 <dialog id="namedlg" aria-labelledby="namedlg-title">
@@ -204,7 +206,7 @@
 <dialog id="aboutdlg" aria-labelledby="aboutdlg-title">
   <form method="dialog" class="about">
     <h2 id="aboutdlg-title">About Tabbed PDF</h2>
-    <p class="fine">Version 0.2 · Same layout as Tabbed Word and Tabbed Slides.</p>
+    <p class="fine">Version 0.3 · Same layout as Tabbed Word and Tabbed Slides.</p>
     <p>Open, create, annotate, sign, rearrange and export PDF files in your browser. Nothing leaves your device.</p>
     <h3>Keyboard shortcuts</h3>
     <table class="shortcuts">
@@ -220,6 +222,10 @@
     </table>
     <h3>Credits</h3>
     <p class="fine">pdf.js 4.10.38 (rendering) · pdf-lib 1.17.1 (editing and export) · @pdf-lib/fontkit 1.1.1 · DejaVu Sans (typed text). Licences: third-party-licenses.txt.</p>
+    <h3>Made by</h3>
+    <p>The Last Byzantine, MMXXVI. Sharing is love!</p>
+    <p>For any bug or suggestion, please contact me at <a href="mailto:thelastbyzantine@proton.me">thelastbyzantine@proton.me</a>.</p>
+    <p>Source code and updates: <a href="https://github.com/The-Last-Byzantine/tabbed-pdf" target="_blank" rel="noopener">github.com/The-Last-Byzantine/tabbed-pdf</a></p>
     <div class="dialog-actions"><button value="close" class="primary">Close</button></div>
   </form>
 </dialog>
