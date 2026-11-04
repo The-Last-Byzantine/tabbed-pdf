@@ -162,12 +162,12 @@
 </main>
 
 <footer id="statusbar">
-  <span id="stat-pages">0 pages</span>
-  <span id="stat-page">—</span>
-  <span id="stat-zoom">100%</span>
-  <span id="stat-tool">Select</span>
-  <span id="stat-dirty"></span>
-  <span class="ver">Tabbed PDF v0.3.3 · local</span>
+  <button type="button" class="sb-btn" id="stat-pages" title="Show the Pages tab">0 pages</button>
+  <button type="button" class="sb-btn" id="stat-page" title="Go to a page">—</button>
+  <button type="button" class="sb-btn" id="stat-zoom" title="Change zoom">100%</button>
+  <button type="button" class="sb-btn" id="stat-tool" title="Choose an annotation tool">Select</button>
+  <button type="button" class="sb-btn" id="stat-dirty" title="Save this document" hidden>Unsaved changes</button>
+  <button type="button" class="sb-btn ver" id="stat-version" title="About Tabbed PDF">Tabbed PDF v0.3.4 · local</button>
 </footer>
 
 <dialog id="namedlg" aria-labelledby="namedlg-title">
@@ -218,7 +218,7 @@
 <dialog id="aboutdlg" aria-labelledby="aboutdlg-title">
   <form method="dialog" class="about">
     <h2 id="aboutdlg-title">About Tabbed PDF</h2>
-    <p class="fine">Version 0.3.3 · Same layout as Tabbed Word and Tabbed Slides.</p>
+    <p class="fine">Version 0.3.4 · Same layout as Tabbed Word and Tabbed Slides.</p>
     <p>Open, create, annotate, sign, rearrange and export PDF files in your browser. Nothing leaves your device.</p>
     <h3>Keyboard shortcuts</h3>
     <table class="shortcuts">

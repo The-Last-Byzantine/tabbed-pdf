@@ -368,6 +368,9 @@ main {
   background: var(--ribbon);
   border-top: 1px solid var(--ribbon-border);
 }
+.sb-btn { font: inherit; color: inherit; background: none; border: 0; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
+.sb-btn:hover, .sb-btn:focus-visible { background: rgba(0, 0, 0, 0.08); }
+.sb-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 #stat-dirty { color: var(--o700); font-weight: 600; }
 :root[data-theme="dark"] #stat-dirty { color: var(--o300); }
 

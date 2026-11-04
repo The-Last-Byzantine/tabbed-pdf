@@ -88,6 +88,7 @@ const state = {
   symbol: 'check',
   sig: null,
   zoom: 1.25,
+  ribbonHidden: false, // ribbon collapsed by clicking the active tab
   thumbsOpen: true,
   gesture: null,
   io: null,
@@ -531,7 +532,7 @@ function renderStatus(tab) {
   $('#stat-tool').textContent = TOOL_NAMES[state.tool] || state.tool;
   const sel = tab && tab.selPages.size ? ` · ${tab.selPages.size} selected` : '';
   $('#stat-page').textContent += sel;
-  $('#stat-dirty').textContent = tab && tab.dirty ? 'Unsaved changes' : '';
+  $('#stat-dirty').hidden = !(tab && tab.dirty);
   const name = tab ? tab.name + (tab.dirty ? ' ●' : '') : 'No document open';
   $('#filename').textContent = tab ? tab.name : 'No document open';
   $('#filename').classList.toggle('dirty', !!(tab && tab.dirty));
@@ -1733,6 +1734,30 @@ function showPanel(name) {
   for (const p of $$('#toolbar .panel')) p.classList.toggle('selected', p.dataset.panel === name);
 }
 
+// Show a ribbon panel even when the ribbon is collapsed.
+function openRibbon(name) {
+  state.ribbonHidden = false;
+  document.body.classList.remove('ribbon-off');
+  showPanel(name);
+}
+
+function goToPagePrompt() {
+  const tab = tabOf();
+  if (!tab || !tab.pages.length) return;
+  const v = window.prompt(`Go to page (1 to ${tab.pages.length})`, String(tab.current + 1));
+  if (v === null) return;
+  const n = parseInt(v, 10);
+  if (!Number.isFinite(n)) return toast('Type a page number', true);
+  tab.current = clamp(n, 1, tab.pages.length) - 1;
+  const view = tab.views.get(tab.pages[tab.current].uid);
+  if (view) {
+    state.pinCurrentUntil = Date.now() + 500;
+    view.el.scrollIntoView({ block: 'start', behavior: 'auto' });
+  }
+  updateThumbSelection(tab);
+  renderStatus(tab);
+}
+
 function setTool(tool) {
   state.tool = tool;
   if (tool !== 'select') {
@@ -1890,15 +1915,22 @@ function toast(message, isError = false) {
 function wire() {
   // Ribbon tabs
   // Collapsible ribbon: click the tab you are on to hide the commands; click any tab to show them again
-  let ribbonHidden = false;
   for (const b of $$('#ribbon-tabs [data-panel]')) {
     b.addEventListener('click', () => {
       const wasOn = b.classList.contains('selected');
-      if (ribbonHidden) { ribbonHidden = false; document.body.classList.remove('ribbon-off'); showPanel(b.dataset.panel); }
-      else if (wasOn) { ribbonHidden = true; document.body.classList.add('ribbon-off'); }
+      if (state.ribbonHidden) openRibbon(b.dataset.panel);
+      else if (wasOn) { state.ribbonHidden = true; document.body.classList.add('ribbon-off'); }
       else showPanel(b.dataset.panel);
     });
   }
+
+  // Status bar: each item opens the control that changes it, as in Tabbed Word
+  $('#stat-pages').addEventListener('click', () => openRibbon('pages'));
+  $('#stat-page').addEventListener('click', () => goToPagePrompt());
+  $('#stat-zoom').addEventListener('click', () => { openRibbon('view'); $('#zoomsel').focus(); });
+  $('#stat-tool').addEventListener('click', () => openRibbon('annotate'));
+  $('#stat-dirty').addEventListener('click', () => COMMANDS.save());
+  $('#stat-version').addEventListener('click', () => $('#aboutbtn').click());
 
   // Icons on the command buttons; the text stays as the accessible name and tooltip
   for (const b of $$('#toolbar button[data-act], #toolbar button[data-tool]')) {
