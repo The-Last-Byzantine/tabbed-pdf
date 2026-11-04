@@ -527,6 +527,7 @@ function renderStatus(tab) {
   $('#stat-pages').textContent = tab ? `${n} page${n === 1 ? '' : 's'}` : '0 pages';
   $('#stat-page').textContent = tab && n ? `Page ${tab.current + 1} of ${n}` : '—';
   $('#stat-zoom').textContent = `${Math.round(state.zoom * 100)}%`;
+  syncZoomSelect();
   $('#stat-tool').textContent = TOOL_NAMES[state.tool] || state.tool;
   const sel = tab && tab.selPages.size ? ` · ${tab.selPages.size} selected` : '';
   $('#stat-page').textContent += sel;
@@ -879,6 +880,14 @@ function setZoom(z, keepAnchor = true) {
     viewer.scrollTop = scroll;
     renderStatus(tab);
   });
+}
+
+// The Zoom dropdown shows the current level; "in", "out" and "fit" are actions and do not stay selected.
+function syncZoomSelect() {
+  const sel = $('#zoomsel');
+  if (!sel) return;
+  const want = String(Math.round(state.zoom * 100));
+  sel.value = [...sel.options].some((o) => o.value === want) ? want : '';
 }
 
 function fitWidth() {
@@ -1916,6 +1925,16 @@ function wire() {
     if (!b || b.disabled) return;
     const fn = COMMANDS[b.dataset.act];
     if (fn) fn();
+  });
+
+  // Zoom dropdown (View tab)
+  $('#zoomsel').addEventListener('change', (e) => {
+    const v = e.target.value;
+    if (v === 'in') setZoom(state.zoom * 1.2);
+    else if (v === 'out') setZoom(state.zoom / 1.2);
+    else if (v === 'fit') fitWidth();
+    else setZoom(Number(v) / 100);
+    syncZoomSelect();
   });
 
   // Tools

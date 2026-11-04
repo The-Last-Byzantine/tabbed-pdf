@@ -122,10 +122,20 @@
   </div>
 
   <div class="panel" data-panel="view">
-    <button data-act="zoom-out" title="Zoom out (-)">Zoom out</button>
-    <button data-act="zoom-in" title="Zoom in (+)">Zoom in</button>
-    <button data-act="zoom-100" title="100 %">100%</button>
-    <button data-act="zoom-fit" title="Fit page width">Fit width</button>
+    <label class="label" for="zoomsel">Zoom</label>
+    <select id="zoomsel" title="Zoom the document (+ and − keys also work)">
+      <option value="in">Zoom in</option>
+      <option value="out">Zoom out</option>
+      <option value="fit">Fit width</option>
+      <option value="50">50 %</option>
+      <option value="75">75 %</option>
+      <option value="100">100 %</option>
+      <option value="125">125 %</option>
+      <option value="150">150 %</option>
+      <option value="200">200 %</option>
+      <option value="300">300 %</option>
+      <option value="400">400 %</option>
+    </select>
     <span class="sep"></span>
     <button data-act="toggle-thumbs" title="Show or hide the page list">Pages panel</button>
   </div>
@@ -157,7 +167,7 @@
   <span id="stat-zoom">100%</span>
   <span id="stat-tool">Select</span>
   <span id="stat-dirty"></span>
-  <span class="ver">Tabbed PDF v0.3.2 · local</span>
+  <span class="ver">Tabbed PDF v0.3.3 · local</span>
 </footer>
 
 <dialog id="namedlg" aria-labelledby="namedlg-title">
@@ -208,7 +218,7 @@
 <dialog id="aboutdlg" aria-labelledby="aboutdlg-title">
   <form method="dialog" class="about">
     <h2 id="aboutdlg-title">About Tabbed PDF</h2>
-    <p class="fine">Version 0.3.2 · Same layout as Tabbed Word and Tabbed Slides.</p>
+    <p class="fine">Version 0.3.3 · Same layout as Tabbed Word and Tabbed Slides.</p>
     <p>Open, create, annotate, sign, rearrange and export PDF files in your browser. Nothing leaves your device.</p>
     <h3>Keyboard shortcuts</h3>
     <table class="shortcuts">
