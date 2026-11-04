@@ -19,6 +19,7 @@ Everything runs on the device. Files are never uploaded.
   split a document into one PDF per page.
 - **Annotate**: select/move/resize, highlight, freehand pen, text box, rectangle, ellipse, arrow.
   Six colours, four line widths, text sizes. Double-click a text box to edit it.
+- **Insert**: add JPG, PNG or HEIC images as new pages (each fitted to an A4 page, in its own orientation); HEIC opens only in Safari and other Apple browsers.
 - **Sign**: draw, type (three styles) or upload a signature image; place it on a page. Remembered on the device if you tick the box.
 - **Symbols**: ✓ ✗ ● ○ ★ →, placed as vector graphics.
 - **Undo / redo**: Ctrl+Z / Ctrl+Shift+Z for every edit, page operation and annotation.

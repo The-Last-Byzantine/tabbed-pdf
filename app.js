@@ -611,7 +611,7 @@ async function loadPdfJs(bytes) {
   return pdfjsLib.getDocument({ data: bytes.slice(0), ...PDFJS_OPTS }).promise;
 }
 
-async function openBytes(name, bytes, handle = null) {
+async function openBytes(name, bytes, handle = null, link = null) {
   let pdf;
   try {
     pdf = await loadPdfJs(bytes);
@@ -622,12 +622,13 @@ async function openBytes(name, bytes, handle = null) {
     return toast(msg, true);
   }
   const tab = newTab({ name, handle });
+  if (link) tab.link = link; // v0.3.1: opened from Tabbed Folders; Save sends it back there
   const srcId = 's' + uid();
   tab.sources.set(srcId, { bytes, pdf });
   tab.pages = Array.from({ length: pdf.numPages }, (_, i) => newPage({ src: srcId, index: i }));
   if (!tab.pages.length) return toast('That PDF has no pages.', true);
   addTab(tab);
-  toast(`Opened ${name}`);
+  toast(link ? `Opened ${name} from Tabbed Folders · Save writes it back there` : `Opened ${name}`);
 }
 
 async function newBlankDocument() {
@@ -659,6 +660,60 @@ async function insertBytes(tab, bytes) {
   tab.current = at;
   renderAll(tab);
   toast(`Inserted ${added.length} page${added.length === 1 ? '' : 's'}`);
+}
+
+// Images become new pages. Each image is fitted, centred, on an A4 page in its own orientation.
+// PNG is kept as it is; JPG, HEIC and other formats are re-encoded as JPEG through a canvas.
+// HEIC decodes only where the browser can read it (Safari and other Apple browsers).
+const IMAGE_NAME = /\.(jpe?g|png|heic|heif)$/i;
+const IMAGE_MARGIN = 36;
+
+async function imageToPageData(file) {
+  const raw = await readAsDataUrl(file);
+  const img = await loadImage(raw);
+  const w = img.naturalWidth, h = img.naturalHeight;
+  if (!w || !h) throw new Error('empty image');
+  if (file.type === 'image/png' || /\.png$/i.test(file.name)) return { data: raw, w, h };
+  const c = el('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(img, 0, 0, w, h);
+  return { data: c.toDataURL('image/jpeg', 0.92), w, h };
+}
+
+async function insertImagePages(tab, files) {
+  const pages = [];
+  const failed = [];
+  for (const f of files) {
+    if (!IMAGE_NAME.test(f.name) && !/^image\/(jpeg|png|heic|heif)$/.test(f.type)) { failed.push(f.name); continue; }
+    try {
+      const { data, w, h } = await imageToPageData(f);
+      const landscape = w > h;
+      const pw = landscape ? DEFAULT_PAGE[1] : DEFAULT_PAGE[0];
+      const ph = landscape ? DEFAULT_PAGE[0] : DEFAULT_PAGE[1];
+      const scale = Math.min((pw - 2 * IMAGE_MARGIN) / w, (ph - 2 * IMAGE_MARGIN) / h);
+      const iw = w * scale, ih = h * scale;
+      const pg = newPage({ blank: { w: pw, h: ph } });
+      pg.items.push({ uid: uid(), type: 'image', x: (pw - iw) / 2, y: (ph - ih) / 2, w: iw, h: ih, data });
+      pages.push(pg);
+    } catch {
+      failed.push(f.name);
+    }
+  }
+  if (failed.length) {
+    toast(`Could not add ${failed.join(', ')}. HEIC opens only in Safari and other Apple browsers; convert it to JPG elsewhere.`, true);
+  }
+  if (!pages.length) return;
+  pushUndo(tab);
+  const at = clamp(tab.current, 0, tab.pages.length - 1) + 1;
+  tab.pages.splice(at, 0, ...pages);
+  tab.selPages = new Set(pages.map((p) => p.uid));
+  tab.current = at;
+  renderAll(tab);
+  toast(`Added ${pages.length} page${pages.length === 1 ? '' : 's'} from image${pages.length === 1 ? '' : 's'}`);
 }
 
 async function openPicker() {
@@ -971,7 +1026,7 @@ function onPointerDown(e) {
     return;
   }
   if (tool === 'sign') {
-    if (!state.sig) return toast('Create a signature first (Sign & symbols tab)', true);
+    if (!state.sig) return toast('Create a signature first (Insert tab)', true);
     pushUndo(tab);
     const w = 170;
     const h = w * (state.sig.h / state.sig.w);
@@ -1350,6 +1405,17 @@ async function saveTab(tab, { asNew = false } = {}) {
     console.error(e);
     return toast('Could not build the PDF. It may be encrypted or damaged.', true);
   }
+  // v0.3.1: a PDF opened from Tabbed Folders is saved back there while Folders is open
+  if (!asNew && tab.link && window.TabbedLink && window.TabbedLink.available(tab.link)) {
+    const r = await window.TabbedLink.saveBack(tab.link, new Blob([bytes], { type: 'application/pdf' }), tab.link.name);
+    if (r.ok) {
+      tab.name = r.name; tab.link.name = r.name; tab.dirty = false;
+      renderTabs(); renderStatus(tab);
+      return toast(`Saved back to Tabbed Folders · ${r.name}`);
+    }
+    tab.link = null;
+    return toast(`Not saved back: ${r.error || 'Tabbed Folders did not answer'}. Press Save again to save a copy.`, true);
+  }
   try {
     if (!asNew && tab.handle) {
       await writeHandle(tab.handle, bytes);
@@ -1727,6 +1793,7 @@ const COMMAND_ICONS = {
   "redo": "<path d=\"M15 14l5-5-5-5\"/><path d=\"M20 9H10a6 6 0 0 0 0 12h3\"/>",
   "close-tab": "<rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2\"/><path d=\"M9 9l6 6M15 9l-6 6\"/>",
   "add-page": "<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"1.5\"/><path d=\"M12 8v8M8 12h8\"/>",
+  "insert-image": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"1.5\"/><circle cx=\"8.5\" cy=\"9\" r=\"1.6\"/><path d=\"M21 16l-5-5-8 8\"/><path d=\"M12 13.5v4M10 15.5h4\"/>",
   "insert-pdf": "<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"1.5\"/><path d=\"M12 8v7M9 12.5l3 3 3-3\"/>",
   "merge-open": "<path d=\"M4 4h6v5H4zM14 4h6v5h-6z\"/><path d=\"M7 9v3a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3V9\"/><path d=\"M12 15v5M9.5 17.5 12 20l2.5-2.5\"/>",
   "save-separate": "<path d=\"M5 5h7v6H5zM12 13h7v6h-7z\"/><path d=\"M9 11v3h3M15 13v-2\"/><path d=\"M3 19h18\" stroke-dasharray=\"1.5 2\"/>",
@@ -1768,6 +1835,7 @@ const COMMANDS = {
   'close-tab': () => { const t = tabOf(); if (t) closeTab(t); },
   'add-page': () => { const t = tabOf(); if (t) addBlankPage(t); },
   'insert-pdf': () => { if (tabOf()) $('#insertinput').click(); },
+  'insert-image': () => { if (tabOf()) $('#imginput').click(); else toast('Open or create a document first', true); },
   'merge-open': () => mergeOpenDocuments(),
   'split-pages': () => splitIntoPages(tabOf()),
   'save-separate': () => { const t = tabOf(); if (t) splitIntoPages(t, selectedPageUids(t)); },
@@ -1903,6 +1971,13 @@ function wire() {
     e.target.value = '';
     await openFile(f);
   });
+  $('#imginput').addEventListener('change', async (e) => {
+    const files = [...e.target.files];
+    e.target.value = '';
+    const tab = tabOf();
+    if (!files.length || !tab) return;
+    insertImagePages(tab, files);
+  });
   $('#insertinput').addEventListener('change', async (e) => {
     const f = e.target.files[0];
     e.target.value = '';
@@ -2017,6 +2092,8 @@ function init() {
   renderTabs();
   renderStatus(null);
   registerServiceWorker();
+  // v0.3.1: receive PDFs from Tabbed Folders
+  if (window.TabbedLink) window.TabbedLink.init((file, link) => { file.arrayBuffer().then((buf) => openBytes(file.name, new Uint8Array(buf), null, link)); });
 
   // Test/debug hook: exposes the export pipeline without UI.
   window.TabbedPDF = {
