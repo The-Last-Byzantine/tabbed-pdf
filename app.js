@@ -424,6 +424,15 @@ function makeSvgItem(item, z) {
       const m = Math.min(item.w, item.h) * 0.2;
       g.append(svgEl('path', { d: `M${item.x + m} ${item.y + m}L${item.x + item.w - m} ${item.y + item.h - m}M${item.x + item.w - m} ${item.y + m}L${item.x + m} ${item.y + item.h - m}`, stroke: '#2563eb', 'stroke-width': 0.8 / z, fill: 'none' }));
     }
+  } else if (item.type === 'note') {
+    const t = svgEl('title');
+    t.textContent = item.text || 'Comment';
+    g.append(t);
+    g.append(svgEl('rect', { x: item.x, y: item.y, width: item.w, height: item.h, fill: '#fde68a', stroke: '#a16207', 'stroke-width': 0.8 / z }));
+    for (let i = 1; i <= 3; i++) {
+      const yy = item.y + (i * item.h) / 4;
+      g.append(svgEl('line', { x1: item.x + 3, x2: item.x + item.w - 3, y1: yy, y2: yy, stroke: '#a16207', 'stroke-width': 0.8 / z }));
+    }
   } else if (item.type === 'image') {
     g.append(svgEl('image', { href: item.data, x: item.x, y: item.y, width: item.w, height: item.h, preserveAspectRatio: 'none' }));
   } else if (item.type === 'symbol' && SYMBOLS[item.kind]?.dot) {
@@ -574,7 +583,7 @@ function renderStatus(tab) {
 const TOOL_NAMES = {
   select: 'Select', highlight: 'Highlight', ink: 'Pen', text: 'Text', rect: 'Rectangle',
   ellipse: 'Ellipse', arrow: 'Arrow', sign: 'Signature', symbol: 'Symbol',
-  cover: 'White-out', textfield: 'Text field', checkbox: 'Checkbox', 'edit-text': 'Edit text',
+  cover: 'White-out', textfield: 'Text field', checkbox: 'Checkbox', 'edit-text': 'Edit text', comment: 'Comment',
 };
 
 // ---------- tabs ----------
@@ -843,6 +852,17 @@ async function editTextAt(tab, view, p) {
   tab.dirty = true;
   renderAll(tab);
   toast('Text replaced. The original characters remain under the white box in the file.');
+}
+
+// Comment: a sticky note at the click point, saved as a PDF Text annotation.
+function addComment(tab, view, p) {
+  const text = window.prompt('Comment text:', '');
+  if (text === null || !text.trim()) return;
+  pushUndo(tab);
+  view.pg.items.push({ uid: uid(), type: 'note', x: p.u, y: p.v, w: 16, h: 16, text: text.trim() });
+  tab.dirty = true;
+  renderAll(tab);
+  toast('Comment added. It is saved as a PDF comment.');
 }
 
 // Flatten forms on save: fields become plain page content and can no longer be filled in.
@@ -1217,6 +1237,10 @@ function onPointerDown(e) {
   const color = state.color;
   const sw = state.sw;
 
+  if (tool === 'comment') {
+    addComment(tab, view, p);
+    return;
+  }
   if (tool === 'edit-text') {
     editTextAt(tab, view, p);
     return;
@@ -1668,6 +1692,26 @@ function drawPolylinePdf(page, P, pts, color, sw, closed = false) {
 
 async function drawItemPdf(out, page, item, { P, R, font, images }) {
   switch (item.type) {
+    case 'note': {
+      // A PDF Text annotation: other readers show it as a comment with its text.
+      const { PDFDict, PDFArray, PDFName, PDFNumber, PDFHexString } = PDFLib;
+      const corners = rectPts(item).map(([u, v]) => P(u, v));
+      const xs = corners.map((c) => c.x), ys = corners.map((c) => c.y);
+      const rect = PDFArray.withContext(out.context);
+      for (const n of [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]) rect.push(PDFNumber.of(n));
+      const color = PDFArray.withContext(out.context);
+      for (const n of [1, 0.85, 0.2]) color.push(PDFNumber.of(n));
+      const d = PDFDict.withContext(out.context);
+      d.set(PDFName.of('Type'), PDFName.of('Annot'));
+      d.set(PDFName.of('Subtype'), PDFName.of('Text'));
+      d.set(PDFName.of('Name'), PDFName.of('Comment'));
+      d.set(PDFName.of('Rect'), rect);
+      d.set(PDFName.of('C'), color);
+      d.set(PDFName.of('F'), PDFNumber.of(4));
+      d.set(PDFName.of('Contents'), PDFHexString.fromText(item.text || ''));
+      page.node.addAnnot(out.context.register(d));
+      return;
+    }
     case 'cover': {
       const corners = rectPts(item).map(([u, v]) => P(u, v));
       const xs = corners.map((c) => c.x), ys = corners.map((c) => c.y);
@@ -1910,6 +1954,108 @@ function askName(defaultName) {
     input.focus();
     input.select();
   });
+}
+
+// ---------- compare ----------
+function wordsOfPage(content) {
+  let s = '';
+  for (const it of content.items) s += it.str + (it.hasEOL ? '\n' : ' ');
+  return s.split(/\s+/).filter(Boolean);
+}
+
+async function textPagesOf(bytes) {
+  const doc = await loadPdfJs(bytes);
+  const pages = [];
+  try {
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      pages.push(wordsOfPage(await page.getTextContent()));
+    }
+  } finally {
+    doc.destroy();
+  }
+  return pages;
+}
+
+// Word-level LCS diff: returns [{ op: 'eq' | 'del' | 'ins', t }].
+function diffWords(a, b) {
+  const n = a.length, m = b.length;
+  if (n * m > 4e6) return [...a.map((t) => ({ op: 'del', t })), ...b.map((t) => ({ op: 'ins', t }))];
+  const dp = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const out = [];
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { out.push({ op: 'eq', t: a[i] }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) out.push({ op: 'del', t: a[i++] });
+    else out.push({ op: 'ins', t: b[j++] });
+  }
+  while (i < n) out.push({ op: 'del', t: a[i++] });
+  while (j < m) out.push({ op: 'ins', t: b[j++] });
+  return out;
+}
+
+function pickFile() {
+  return new Promise((resolve) => {
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.pdf,application/pdf';
+    inp.addEventListener('change', () => resolve(inp.files[0] || null));
+    inp.addEventListener('cancel', () => resolve(null));
+    inp.click();
+  });
+}
+
+// Compares the text of the open document (current state, edits included) with another PDF, page by page.
+async function comparePdfs(tab) {
+  if (!tab) return toast('Open a document first', true);
+  const file = await pickFile();
+  if (!file) return;
+  try {
+    const left = await textPagesOf(await exportBytes(tab));
+    const right = await textPagesOf(new Uint8Array(await file.arrayBuffer()));
+    showCompare(tab.name, file.name, left, right);
+  } catch (err) {
+    toast(`Compare failed: ${err.message}`, true);
+  }
+}
+
+function showCompare(leftName, rightName, left, right) {
+  const body = $('#cmpbody');
+  body.replaceChildren();
+  const head = document.createElement('p');
+  head.className = 'fine';
+  head.textContent = `Left: ${leftName} (open document, current state). Right: ${rightName}. Pages: ${left.length} and ${right.length}. Compares text only.`;
+  body.append(head);
+  let changed = 0;
+  for (let i = 0; i < Math.max(left.length, right.length); i++) {
+    const a = left[i] || [], b = right[i] || [];
+    const ops = diffWords(a, b);
+    if (left[i] && right[i] && ops.every((o) => o.op === 'eq')) continue;
+    changed++;
+    const h = document.createElement('h3');
+    h.textContent = `Page ${i + 1}` + (!left[i] ? ' (only in right file)' : !right[i] ? ' (only in left file)' : '');
+    const p = document.createElement('p');
+    p.className = 'cmp-text';
+    for (const o of ops) {
+      if (o.op === 'eq') { p.append(o.t + ' '); continue; }
+      const s = document.createElement(o.op === 'del' ? 'del' : 'ins');
+      s.className = o.op === 'del' ? 'cmp-del' : 'cmp-ins';
+      s.textContent = o.t + ' ';
+      p.append(s);
+    }
+    body.append(h, p);
+  }
+  if (!changed) {
+    const p = document.createElement('p');
+    p.textContent = 'No text differences found.';
+    body.append(p);
+  }
+  $('#cmpdlg').showModal();
 }
 
 // ---------- signatures ----------
@@ -2241,6 +2387,7 @@ const COMMANDS = {
   'crop-pages': () => cropPages(tabOf()),
   'clear-crop': () => clearCrop(tabOf()),
   'flatten-forms': () => toggleFlattenForms(tabOf()),
+  compare: () => comparePdfs(tabOf()),
   'clear-bookmarks': () => clearBookmarks(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),

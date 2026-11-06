@@ -652,3 +652,11 @@ button.primary:hover, .primary:hover { background: #c2410c !important; }
   background: #fed7aa !important;
   border-color: #c2410c #fff #fff #c2410c !important;
 }
+
+/* v2026.11.9: compare PDFs and comments */
+#cmpdlg.wide { width: min(640px, 92vw); max-height: 80vh; }
+#cmpbody { max-height: 56vh; overflow: auto; }
+#cmpbody h3 { font-size: 13px; margin: 10px 0 4px; }
+.cmp-text { font-size: 13px; line-height: 1.5; white-space: pre-wrap; margin: 0; }
+.cmp-del { color: #b91c1c; text-decoration: line-through; }
+.cmp-ins { color: #15803d; text-decoration: underline; }

@@ -49,6 +49,7 @@
     <button data-act="save" class="primary" title="Save (Ctrl+S). Writes back to the same file where the browser allows it.">Save</button>
     <button data-act="saveas" title="Save a new copy (Ctrl+Shift+S)">Save as…</button>
     <button data-act="export-selected" title="Export only the selected pages as a new PDF">Export selected pages</button>
+    <button data-act="compare" title="Compare the text of this document with another PDF, page by page">Compare with a PDF</button>
     <span class="sep"></span>
     <button data-act="undo" title="Undo (Ctrl+Z)">Undo</button>
     <button data-act="redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
@@ -95,6 +96,7 @@
       <button data-tool="cover" class="tool" title="White-out: cover old text, then add new text on top">White-out</button>
       <button data-tool="textfield" class="tool" title="Fillable text field: drag to place it">Text field</button>
       <button data-tool="checkbox" class="tool" title="Fillable checkbox: drag to place it">Checkbox</button>
+      <button data-tool="comment" class="tool" title="Comment: click the page to add a note">Comment</button>
       <button data-act="flatten-forms" class="tool" title="Toggle: flatten all form fields into the page when saving">Flatten forms on save</button>
     </div>
     <span class="sep"></span>
@@ -179,7 +181,7 @@
   <button type="button" class="sb-btn" id="stat-zoom" title="Change zoom">100%</button>
   <button type="button" class="sb-btn" id="stat-tool" title="Choose an annotation tool">Select</button>
   <button type="button" class="sb-btn" id="stat-dirty" title="Save this document" hidden>Unsaved changes</button>
-  <button type="button" class="sb-btn ver" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.8 · local</button>
+  <button type="button" class="sb-btn ver" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.9 · local</button>
 </footer>
 
 <dialog id="namedlg" aria-labelledby="namedlg-title">
@@ -191,6 +193,14 @@
       <button value="cancel" formnovalidate>Cancel</button>
       <button value="ok" class="primary">Save</button>
     </div>
+  </form>
+</dialog>
+
+<dialog id="cmpdlg" class="wide" aria-labelledby="cmpdlg-title">
+  <form method="dialog">
+    <h2 id="cmpdlg-title">Compare PDFs</h2>
+    <div id="cmpbody"></div>
+    <div class="dialog-actions"><button value="close" class="primary">Close</button></div>
   </form>
 </dialog>
 
@@ -230,7 +240,7 @@
 <dialog id="aboutdlg" aria-labelledby="aboutdlg-title">
   <form method="dialog" class="about">
     <h2 id="aboutdlg-title">About Tabbed PDF</h2>
-    <p class="fine">Version 2026.11.8 · Same layout as Tabbed Word and Tabbed Slides.</p>
+    <p class="fine">Version 2026.11.9 · Same layout as Tabbed Word and Tabbed Slides.</p>
     <p>Open, create, annotate, sign, rearrange and export PDF files in your browser. Nothing leaves your device.</p>
     <h3>Keyboard shortcuts</h3>
     <table class="shortcuts">
