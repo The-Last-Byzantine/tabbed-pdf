@@ -39,6 +39,7 @@
   <button role="tab" data-panel="annotate" aria-selected="false" title="Annotate: highlight, pen, text, shapes"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>Annotate</button>
   <button role="tab" data-panel="insert" aria-selected="false" title="Insert: images as new pages, signatures and symbols"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1.5"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>Insert</button>
   <button role="tab" data-panel="view" aria-selected="false" title="View: zoom and page list"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>View</button>
+  <button role="tab" data-panel="advanced" aria-selected="false" title="Advanced: make scanned pages searchable"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3"/><path d="M8 9h8M8 12h8M8 15h5"/></svg>Advanced</button>
   <button type="button" id="aboutbtn" class="info-btn" title="About Tabbed PDF, keyboard shortcuts and credits" aria-label="About Tabbed PDF, keyboard shortcuts and credits" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01"/></svg></button>
 </div>
 
@@ -135,6 +136,10 @@
     <span class="hint" id="sigstatus">No signature yet.</span>
   </div>
 
+  <div class="panel" data-panel="advanced">
+    <button data-act="ocr" title="Recognise English, Greek and Turkish text on every page and add it as invisible, searchable text">Make searchable (OCR)</button>
+  </div>
+
   <div class="panel" data-panel="view">
     <label class="label" for="zoomsel">Zoom</label>
     <select id="zoomsel" title="Zoom the document (+ and − keys also work)">
@@ -181,7 +186,7 @@
   <button type="button" class="sb-btn" id="stat-zoom" title="Change zoom">100%</button>
   <button type="button" class="sb-btn" id="stat-tool" title="Choose an annotation tool">Select</button>
   <button type="button" class="sb-btn" id="stat-dirty" title="Save this document" hidden>Unsaved changes</button>
-  <button type="button" class="sb-btn ver" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.9 · local</button>
+  <button type="button" class="sb-btn ver" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.10 · local</button>
 </footer>
 
 <dialog id="namedlg" aria-labelledby="namedlg-title">
@@ -240,7 +245,7 @@
 <dialog id="aboutdlg" aria-labelledby="aboutdlg-title">
   <form method="dialog" class="about">
     <h2 id="aboutdlg-title">About Tabbed PDF</h2>
-    <p class="fine">Version 2026.11.9 · Same layout as Tabbed Word and Tabbed Slides.</p>
+    <p class="fine">Version 2026.11.10 · Same layout as Tabbed Word and Tabbed Slides.</p>
     <p>Open, create, annotate, sign, rearrange and export PDF files in your browser. Nothing leaves your device.</p>
     <h3>Keyboard shortcuts</h3>
     <table class="shortcuts">
@@ -255,7 +260,7 @@
       <tr><td>Esc</td><td>Back to Select tool, clear selection</td></tr>
     </table>
     <h3>Credits</h3>
-    <p class="fine">pdf.js 4.10.38 (rendering) · pdf-lib 1.17.1 (editing and export) · @pdf-lib/fontkit 1.1.1 · DejaVu Sans (typed text). Licences: third-party-licenses.txt.</p>
+    <p class="fine">pdf.js 4.10.38 (rendering) · pdf-lib 1.17.1 (editing and export) · @pdf-lib/fontkit 1.1.1 · DejaVu Sans (typed text) · Tesseract.js 7.0.0 with English, Greek and Turkish recognition data (OCR). Licences: third-party-licenses.txt.</p>
     <h3>Made by</h3>
     <p>The Last Byzantine, MMXXVI. Sharing is love!</p>
     <p>For any bug or suggestion, please contact me at <a href="mailto:thelastbyzantine@proton.me">thelastbyzantine@proton.me</a>.</p>
@@ -271,6 +276,7 @@
 <script src="tabbed-link.js"></script>
 <script src="vendor/pdf-lib/pdf-lib.min.js"></script>
 <script src="vendor/fontkit/fontkit.umd.min.js"></script>
+<script src="vendor/tesseract/tesseract.min.js"></script>
 <script type="module" src="app.js"></script>
 </body>
 </html>

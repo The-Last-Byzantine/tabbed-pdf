@@ -1692,6 +1692,14 @@ function drawPolylinePdf(page, P, pts, color, sw, closed = false) {
 
 async function drawItemPdf(out, page, item, { P, R, font, images }) {
   switch (item.type) {
+    case 'ocr': {
+      // Invisible text (opacity 0): searchable and copyable, but not drawn on the page.
+      const size = Math.min(item.h * 0.85, item.w / font.widthOfTextAtSize(item.text, 1));
+      if (!(size > 0.5)) return;
+      const at = P(item.x, item.y + item.h * 0.8);
+      page.drawText(item.text, { x: at.x, y: at.y, size, font, opacity: 0 });
+      return;
+    }
     case 'note': {
       // A PDF Text annotation: other readers show it as a comment with its text.
       const { PDFDict, PDFArray, PDFName, PDFNumber, PDFHexString } = PDFLib;
@@ -1954,6 +1962,120 @@ function askName(defaultName) {
     input.focus();
     input.select();
   });
+}
+
+// ---------- OCR: English, Greek and Turkish ----------
+// Recognised words are stored as invisible text items (type 'ocr') on each page. They are not drawn,
+// but the saved PDF can be searched, copied and read by screen readers.
+// Two passes per page: English+Greek reads Greek correctly; Turkish alone keeps ş ğ ı İ ç ö ü, which the
+// combined model drops. Each word takes the Greek reading when the Greek pass found Greek letters there.
+const OCR_SCALE = 3; // page rendered at about 216 dpi for recognition
+const OCR_CORE = './vendor/tesseract/core/';
+const OCR_OPTS = { workerPath: './vendor/tesseract/worker.min.js', corePath: OCR_CORE, langPath: './vendor/tesseract/lang/', gzip: true };
+let ocrRunning = false;
+
+async function runOcr(tab) {
+  if (!tab) return toast('Open a document first', true);
+  if (ocrRunning) return;
+  if (typeof Tesseract === 'undefined') return toast('The text recogniser did not load', true);
+  const ok = window.confirm(`Make ${tab.pages.length} page(s) searchable? English, Greek and Turkish are recognised. This runs in your browser and can take a while on long documents.`);
+  if (!ok) return;
+  ocrRunning = true;
+  pushUndo(tab);
+  let greek = null, latin = null;
+  let done = 0, words = 0;
+  try {
+    toast('Loading the text recogniser…');
+    greek = await Tesseract.createWorker(['eng', 'ell'], 1, OCR_OPTS);
+    latin = await Tesseract.createWorker(['tur'], 1, OCR_OPTS);
+    for (const pg of tab.pages) {
+      pg.items = pg.items.filter((it) => it.type !== 'ocr'); // replace any earlier OCR
+      const info = await pageInfo(tab, pg);
+      if (!info.pdfPage) continue; // blank pages have nothing to recognise
+      done++;
+      toast(`Recognising page ${done} of ${tab.pages.length}…`);
+      const found = await recognisePage({ greek, latin }, info);
+      words += found.length;
+      pg.items.push(...found);
+    }
+    tab.dirty = true;
+    renderAll(tab);
+    toast(`OCR done: ${words} words on ${done} page(s). Save to keep the searchable text.`);
+  } catch (err) {
+    console.error(err);
+    toast(`OCR failed: ${err.message || err}`, true);
+  } finally {
+    await Promise.all([greek?.terminate(), latin?.terminate()]);
+    ocrRunning = false;
+  }
+}
+
+// Words from a Tesseract result, with pixel boxes.
+function ocrWordsOf(data) {
+  const out = [];
+  for (const block of data.blocks || []) {
+    for (const para of block.paragraphs || []) {
+      for (const line of para.lines || []) {
+        for (const word of line.words || []) {
+          const text = (word.text || '').trim();
+          const b = word.bbox;
+          if (text && b && b.x1 > b.x0 && b.y1 > b.y0) out.push({ text, x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1 });
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function ocrOverlap(a, b) {
+  const ix = Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0));
+  const iy = Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
+  const inter = ix * iy;
+  const areaA = (a.x1 - a.x0) * (a.y1 - a.y0), areaB = (b.x1 - b.x0) * (b.y1 - b.y0);
+  return inter / (areaA + areaB - inter);
+}
+
+async function recognisePage(ocr, info) {
+  const viewport = info.pdfPage.getViewport({ scale: OCR_SCALE, rotation: info.R });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(viewport.width));
+  canvas.height = Math.max(1, Math.round(viewport.height));
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await info.pdfPage.render({ canvasContext: ctx, viewport }).promise;
+
+  const greekRes = await ocr.greek.recognize(canvas, {}, { blocks: true });
+  const latinRes = await ocr.latin.recognize(canvas, {}, { blocks: true });
+  const greekWords = ocrWordsOf(greekRes.data);
+  const latinWords = ocrWordsOf(latinRes.data);
+  const isGreek = (s) => /\p{Script=Greek}/u.test(s);
+
+  const chosen = [];
+  const usedGreek = new Set();
+  for (const lw of latinWords) {
+    let best = -1, bestOv = 0.3;
+    greekWords.forEach((gw, i) => {
+      const ov = ocrOverlap(gw, lw);
+      if (ov > bestOv) { bestOv = ov; best = i; }
+    });
+    let text = lw.text;
+    if (best >= 0) {
+      usedGreek.add(best);
+      if (isGreek(greekWords[best].text)) text = greekWords[best].text;
+    }
+    chosen.push({ ...lw, text });
+  }
+  greekWords.forEach((gw, i) => {
+    if (!usedGreek.has(i) && isGreek(gw.text)) chosen.push(gw);
+  });
+
+  return chosen.map((w) => ({
+    uid: uid(), type: 'ocr',
+    x: w.x0 / OCR_SCALE, y: w.y0 / OCR_SCALE,
+    w: (w.x1 - w.x0) / OCR_SCALE, h: (w.y1 - w.y0) / OCR_SCALE,
+    text: w.text,
+  }));
 }
 
 // ---------- compare ----------
@@ -2388,6 +2510,7 @@ const COMMANDS = {
   'clear-crop': () => clearCrop(tabOf()),
   'flatten-forms': () => toggleFlattenForms(tabOf()),
   compare: () => comparePdfs(tabOf()),
+  ocr: () => runOcr(tabOf()),
   'clear-bookmarks': () => clearBookmarks(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),
@@ -2417,11 +2540,11 @@ function toast(message, isError = false) {
     note = el('div', 'toast');
     note.id = 'toast';
     note.setAttribute('role', 'status');
-    note.style.cssText = 'position:fixed;left:50%;bottom:52px;transform:translateX(-50%);background:#450a0a;color:#fef2f2;padding:9px 16px;border-radius:8px;font:14px system-ui;z-index:50;box-shadow:0 8px 24px #450a0a66;max-width:90vw;text-align:center';
+    note.style.cssText = 'position:fixed;left:50%;bottom:52px;transform:translateX(-50%);background:#0A246A;color:#fff;padding:9px 16px;border-radius:8px;font:14px system-ui;z-index:50;box-shadow:0 8px 24px #0A246A66;max-width:90vw;text-align:center';
     document.body.append(note);
   }
   note.textContent = message;
-  note.style.background = isError ? '#991b1b' : '#450a0a';
+  note.style.background = isError ? '#991b1b' : '#0A246A';
   note.hidden = false;
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => { note.hidden = true; }, 3600);

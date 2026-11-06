@@ -16,3 +16,13 @@ pdf-lib (vendor/pdf-lib/)  version 1.17.1
 DejaVu Sans (vendor/fonts/DejaVuSans.ttf)  DejaVu fonts 2.37
   Licensed under the Bitstream Vera Free Font License and public domain terms.
   See vendor/fonts/LICENSE.
+
+Tesseract.js 7.0.0 (vendor/tesseract/tesseract.min.js, worker.min.js)
+  Licensed under the Apache License 2.0. See vendor/tesseract/LICENSE-tesseract.js.md.
+
+Tesseract LSTM core 7.0.0 (vendor/tesseract/core/)
+  Licensed under the Apache License 2.0. See vendor/tesseract/core/LICENSE.
+
+Tesseract trained data, best integer variant (vendor/tesseract/lang/eng, ell, tur .traineddata.gz)
+  From @tesseract.js-data/eng, /ell and /tur 1.0.0, which carry the tessdata_best files.
+  Licensed under the Apache License 2.0.
