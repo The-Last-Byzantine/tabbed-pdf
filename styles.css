@@ -623,3 +623,9 @@ header small { display: none; }
 #statusbar .ver { color: #444; }
 #stat-dirty { color: var(--w97-selb); }
 #viewer { background: var(--viewer-bg); }
+
+/* v2026.11.4: the two blue bands at the top keep their gradient but carry no text. */
+header > * { display: none !important; }
+header { padding: 3px 8px !important; min-height: 0; }
+#appstate > * { display: none !important; }
+#appstate { padding: 2px 8px !important; min-height: 0; }

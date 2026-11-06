@@ -416,6 +416,14 @@ function makeSvgItem(item, z) {
   const common = { fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
   if (item.type === 'highlight') {
     g.append(svgEl('rect', { x: item.x, y: item.y, width: item.w, height: item.h, fill: item.color, opacity: 0.38, style: 'mix-blend-mode:multiply' }));
+  } else if (item.type === 'cover') {
+    g.append(svgEl('rect', { x: item.x, y: item.y, width: item.w, height: item.h, fill: '#ffffff', stroke: '#c9c9c9', 'stroke-width': 0.5 / z, 'stroke-dasharray': `${3 / z} ${2 / z}` }));
+  } else if (item.type === 'textfield' || item.type === 'checkbox') {
+    g.append(svgEl('rect', { x: item.x, y: item.y, width: item.w, height: item.h, fill: '#fff7f7', stroke: '#b91c1c', 'stroke-width': 1 / z, 'stroke-dasharray': `${4 / z} ${3 / z}` }));
+    if (item.type === 'checkbox') {
+      const m = Math.min(item.w, item.h) * 0.2;
+      g.append(svgEl('path', { d: `M${item.x + m} ${item.y + m}L${item.x + item.w - m} ${item.y + item.h - m}M${item.x + item.w - m} ${item.y + m}L${item.x + m} ${item.y + item.h - m}`, stroke: '#b91c1c', 'stroke-width': 0.8 / z, fill: 'none' }));
+    }
   } else if (item.type === 'image') {
     g.append(svgEl('image', { href: item.data, x: item.x, y: item.y, width: item.w, height: item.h, preserveAspectRatio: 'none' }));
   } else if (item.type === 'symbol' && SYMBOLS[item.kind]?.dot) {
@@ -566,6 +574,7 @@ function renderStatus(tab) {
 const TOOL_NAMES = {
   select: 'Select', highlight: 'Highlight', ink: 'Pen', text: 'Text', rect: 'Rectangle',
   ellipse: 'Ellipse', arrow: 'Arrow', sign: 'Signature', symbol: 'Symbol',
+  cover: 'White-out', textfield: 'Text field', checkbox: 'Checkbox',
 };
 
 // ---------- tabs ----------
@@ -1512,6 +1521,30 @@ function drawPolylinePdf(page, P, pts, color, sw, closed = false) {
 
 async function drawItemPdf(out, page, item, { P, R, font, images }) {
   switch (item.type) {
+    case 'cover': {
+      const corners = rectPts(item).map(([u, v]) => P(u, v));
+      const xs = corners.map((c) => c.x), ys = corners.map((c) => c.y);
+      const x = Math.min(...xs), y = Math.min(...ys);
+      // White-out covers what is underneath; text added on top replaces it visually.
+      page.drawRectangle({ x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y, color: rgb(1, 1, 1), borderWidth: 0 });
+      return;
+    }
+    case 'textfield':
+    case 'checkbox': {
+      // A real AcroForm field, so it can be filled in any PDF reader.
+      const corners = rectPts(item).map(([u, v]) => P(u, v));
+      const xs = corners.map((c) => c.x), ys = corners.map((c) => c.y);
+      const x = Math.min(...xs), y = Math.min(...ys);
+      const width = Math.max(...xs) - x, height = Math.max(...ys) - y;
+      const form = out.getForm();
+      const name = `${item.type === 'checkbox' ? 'checkbox' : 'text'}_${item.uid}`;
+      if (item.type === 'checkbox') {
+        form.createCheckBox(name).addToPage(page, { x, y, width, height });
+      } else {
+        form.createTextField(name).addToPage(page, { x, y, width, height });
+      }
+      return;
+    }
     case 'highlight': {
       const corners = rectPts(item).map(([u, v]) => P(u, v));
       const xs = corners.map((c) => c.x), ys = corners.map((c) => c.y);
