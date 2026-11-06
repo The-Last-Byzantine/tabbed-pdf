@@ -2438,7 +2438,7 @@ function openMenuFor(btn) {
     const item = document.createElement('button');
     item.type = 'button';
     item.setAttribute('role', 'menuitem');
-    const text = (node.textContent || '').replace(/\s+/g, ' ').trim();
+    const text = node.dataset.label || (node.textContent || '').replace(/\s+/g, ' ').trim();
     const title = (node.title || '').trim();
     const keyMatch = title.match(/\(([^)]*)\)\s*$/);
     let label = text || title.replace(/\s*\([^)]*\)\s*$/, '').replace(/:.*$/, '').trim();
@@ -2863,6 +2863,42 @@ function onKeyDown(e) {
 }
 
 // ---------- service worker ----------
+// ---------- toolbar icons: buttons show an icon; the name stays in the tooltip, the menu and for screen readers ----------
+const TOOLBAR_ICONS = {
+  compare: '<path d="M3 4h7v16H3zM14 4h7v16h-7z"/><path d="M6 9h1M6 13h1M17 9h1M17 13h1"/>',
+  'page-numbers': '<path d="M9 4L7 20M17 4l-2 16M4 9h16M3 15h16"/>',
+  'header-footer': '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18M3 16h18"/>',
+  'doc-properties': '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h10"/>',
+  'bookmark-page': '<path d="M6 3h12v18l-6-4-6 4z"/>',
+  'clear-bookmarks': '<path d="M6 3h12v18l-6-4-6 4z"/><path d="M4 4l16 16"/>',
+  'crop-pages': '<path d="M6 2v14h14M2 6h14v14"/>',
+  'clear-crop': '<path d="M6 2v14h14M2 6h14v14"/><path d="M3 21L21 3"/>',
+  'flatten-forms': '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+  'edit-text': '<path d="M4 7V4h12v3M10 4v16M7 20h6"/><path d="M16 14l4-4 2 2-4 4h-2z"/>',
+  cover: '<rect x="3" y="7" width="18" height="10" rx="1" stroke-dasharray="2 2"/>',
+  textfield: '<rect x="3" y="8" width="18" height="8" rx="1"/><path d="M7 12h6"/>',
+  checkbox: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>',
+  comment: '<path d="M4 5h16v11H9l-5 4z"/>',
+  ocr: '<path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3"/><path d="M8 9h8M8 12h8M8 15h5"/>',
+  'sign-cert': '<circle cx="12" cy="9" r="5"/><path d="M9 14l-2 7 5-3 5 3-2-7"/>',
+  shortcuts: '<rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+  about: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/>',
+};
+
+function applyToolbarIcons() {
+  for (const b of $$('#toolbar button[data-act], #toolbar button[data-tool]')) {
+    const key = b.dataset.act || b.dataset.tool;
+    const label = (b.textContent || '').replace(/\s+/g, ' ').trim() || b.title.replace(/\s*\([^)]*\)\s*$/, '').replace(/:.*$/, '').trim();
+    b.dataset.label = label;
+    b.setAttribute('aria-label', label);
+    const path = TOOLBAR_ICONS[key] || COMMAND_ICONS[key];
+    if (path) {
+      b.classList.add('ico');
+      b.innerHTML = ICON_SVG(path);
+    }
+  }
+}
+
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
@@ -2899,6 +2935,7 @@ function init() {
     setTool,
     COLORS: PALETTE,
   };
+  applyToolbarIcons();
 }
 
 init();

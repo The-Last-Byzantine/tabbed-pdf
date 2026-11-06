@@ -737,3 +737,11 @@ button.primary:hover, .primary:hover { background: #c2410c !important; }
 .menu-pop button:hover:not(:disabled) .k { color: #cfe0f7; }
 .menu-pop button.checked::before { content: "\2713"; position: absolute; left: 8px; top: 4px; font-weight: 700; }
 .menu-pop hr { border: 0; height: 1px; margin: 3px 6px; background: #d6e0ec; }
+
+/* v2026.11.14: toolbar icons use one ink colour and one stroke weight, as in Tabbed Word */
+#toolbar button.ico svg,
+#toolbar button.ico:hover svg,
+#toolbar button.ico.selected svg,
+#toolbar button.ico[aria-pressed="true"] svg { color: #1f2937; stroke: #1f2937; stroke-width: 1.8; }
+#toolbar button.ico.primary svg { color: #fff; stroke: #fff; }
+:root[data-theme="dark"] #toolbar button.ico svg, :root[data-theme="dark"] #toolbar button.ico:hover svg { color: #f3f4f6; stroke: #f3f4f6; }
