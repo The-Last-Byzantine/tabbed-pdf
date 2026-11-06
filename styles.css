@@ -642,12 +642,12 @@ header { padding: 3px 8px !important; min-height: 0; }
 :root:not([data-theme="light"]) { --accent: #fdba74; --accent-hover: #fed7aa; }
 :root[data-theme="dark"] { --accent: #fdba74; --accent-hover: #fed7aa; }
 button.primary, .primary {
-  background: #ea580c !important;
+  background: #0A246A !important;
   border-color: #c2410c !important;
   color: #fff !important;
 }
-button.primary:hover, .primary:hover { background: #c2410c !important; }
-#ribbon-tabs button.selected { box-shadow: inset 0 3px 0 #ea580c !important; }
+button.primary:hover, .primary:hover { background: #1e3a8a !important; }
+#ribbon-tabs button.selected { box-shadow: inset 0 3px 0 #0A246A !important; }
 #toolbar button.selected, #toolbar button[aria-pressed="true"], #toolbar button.tool.selected {
   background: #fed7aa !important;
   border-color: #c2410c #fff #fff #c2410c !important;
@@ -770,3 +770,29 @@ button.primary:hover, .primary:hover { background: #c2410c !important; }
   :root:not([data-theme="light"]) .menu-pop { background: #2E2A27; border-color: #5C544D; }
   :root:not([data-theme="light"]) .menu-pop button, :root:not([data-theme="light"]) #ribbon-tabs button { color: #f3f4f6; }
 }
+
+/* v2026.11.17: primary buttons navy like the title bar; one clean separator line in menus */
+.menu-pop hr { height: 0; background: none; border: 0; border-top: 1px solid #808080; margin: 3px 6px; }
+:root[data-theme="dark"] .menu-pop hr, :root[data-theme="dark"] .menu-pop hr { border-top-color: #5C544D; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .menu-pop hr { border-top-color: #5C544D; } }
+
+/* v2026.11.17: no red text on the start screen or hints; dark mode uses neutral greys, not red */
+#empty p, #empty .fine, .fine, .hint { color: #3f3e3b !important; }
+#empty h2 { color: #1f2937 !important; }
+#toolbar button:not(.primary), #toolbar select, #toolbar input { background: #d4d0c8; }
+#toolbar button:not(.primary):hover { background: #e4e0d8; }
+#toolbar button:disabled:not(.primary) { background: #d4d0c8; }
+#statusbar { background: #2E2A27; color: #f3f4f6; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) #empty p, :root:not([data-theme="light"]) #empty .fine, :root:not([data-theme="light"]) .fine, :root:not([data-theme="light"]) .hint { color: #cfc9c0 !important; }
+  :root:not([data-theme="light"]) #empty h2 { color: #f3f4f6 !important; }
+  :root:not([data-theme="light"]) #toolbar button:not(.primary), :root:not([data-theme="light"]) #toolbar select, :root:not([data-theme="light"]) #toolbar input { background: #3a3633; border-color: #5C544D; color: #f3f4f6; }
+  :root:not([data-theme="light"]) #toolbar button:not(.primary):not(:disabled):hover { background: #4a4541; }
+}
+:root[data-theme="dark"] #empty p, :root[data-theme="dark"] #empty .fine, :root[data-theme="dark"] .fine, :root[data-theme="dark"] .hint { color: #cfc9c0 !important; }
+:root[data-theme="dark"] #empty h2 { color: #f3f4f6 !important; }
+:root[data-theme="dark"] #toolbar button:not(.primary), :root[data-theme="dark"] #toolbar select, :root[data-theme="dark"] #toolbar input { background: #3a3633; border-color: #5C544D; color: #f3f4f6; }
+:root[data-theme="dark"] #toolbar button:not(.primary):not(:disabled):hover { background: #4a4541; }
+/* v2026.11.18: no orange or pink borders on the start buttons */
+button.primary, .primary { border-color: #0A246A !important; }
+.empty-actions button:not(.primary), .dialog-actions button:not(.primary) { border-color: #808080; }

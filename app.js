@@ -2433,7 +2433,7 @@ function openMenuFor(btn) {
     if (child.classList.contains('tool-group')) nodes.push(...child.children); else nodes.push(child);
   }
   for (const node of nodes) {
-    if (node.classList.contains('sep')) { pop.append(document.createElement('hr')); continue; }
+    if (node.classList.contains('sep')) { if (pop.lastElementChild && pop.lastElementChild.tagName !== 'HR') pop.append(document.createElement('hr')); continue; }
     if (node.tagName !== 'BUTTON' || node.hidden) continue;
     const item = document.createElement('button');
     item.type = 'button';

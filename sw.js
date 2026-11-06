@@ -1,7 +1,7 @@
 'use strict';
 // Tabbed PDF service worker: the app works offline after the first visit.
 // Bump CACHE when shipping a change to any precached file.
-const CACHE = 'tabbedpdf-2026-11-16';
+const CACHE = 'tabbedpdf-2026-11-18';
 const CORE = [
   './',
   'index.html',
