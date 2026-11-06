@@ -745,3 +745,7 @@ button.primary:hover, .primary:hover { background: #c2410c !important; }
 #toolbar button.ico[aria-pressed="true"] svg { color: #1f2937; stroke: #1f2937; stroke-width: 1.8; }
 #toolbar button.ico.primary svg { color: #fff; stroke: #fff; }
 :root[data-theme="dark"] #toolbar button.ico svg, :root[data-theme="dark"] #toolbar button.ico:hover svg { color: #f3f4f6; stroke: #f3f4f6; }
+
+/* v2026.11.15: every toolbar icon button is the same square, with the same icon size, so none is clipped */
+#toolbar .panel button.ico, #toolbar button.ico.narrow { width: 36px; min-width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+#toolbar .panel button.ico svg { width: 20px; height: 20px; display: block; flex: 0 0 auto; }
