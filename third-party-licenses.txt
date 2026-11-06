@@ -26,3 +26,7 @@ Tesseract LSTM core 7.0.0 (vendor/tesseract/core/)
 Tesseract trained data, best integer variant (vendor/tesseract/lang/eng, ell, tur .traineddata.gz)
   From @tesseract.js-data/eng, /ell and /tur 1.0.0, which carry the tessdata_best files.
   Licensed under the Apache License 2.0.
+
+node-forge 1.3.1 (vendor/forge/forge.min.js)
+  Licensed under BSD-3-Clause (or GPL-2.0; used here under BSD-3-Clause). See vendor/forge/LICENSE.
+  Used for certificate signatures (signing.js).

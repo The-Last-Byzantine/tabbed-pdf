@@ -1620,7 +1620,7 @@ function addBookmarksPdf(out, tab, pages) {
   out.catalog.set(PDFName.of('Outlines'), outlineRef);
 }
 
-async function buildPdf(tab, pages) {
+async function buildPdf(tab, pages, opts = {}) {
   const out = await PDFDocument.create();
   out.registerFontkit(fontkit);
   const font = await out.embedFont(await loadFontBytes(), { subset: true });
@@ -1678,6 +1678,10 @@ async function buildPdf(tab, pages) {
   if (meta.title) out.setTitle(meta.title);
   if (meta.author) out.setAuthor(meta.author);
   if (meta.subject) out.setSubject(meta.subject);
+  if (opts.signable) {
+    PdfSigner.addPlaceholder(PDFLib, out, out.getPage(0));
+    return out.save({ useObjectStreams: false }); // the signer needs the signature text as plain bytes
+  }
   return out.save();
 }
 
@@ -2078,6 +2082,46 @@ async function recognisePage(ocr, info) {
   }));
 }
 
+// ---------- certificate signature ----------
+// The signed copy is a new file. The open document is not changed: saving it again would remove the signature.
+function askPassword(fileName) {
+  return new Promise((resolve) => {
+    const dlg = $('#pwdlg');
+    const input = $('#pwdinput');
+    $('#pwdlg-file').textContent = `Certificate: ${fileName}`;
+    input.value = '';
+    dlg.returnValue = '';
+    const onClose = () => {
+      dlg.removeEventListener('close', onClose);
+      const value = input.value;
+      input.value = '';
+      resolve(dlg.returnValue === 'ok' ? value : null);
+    };
+    dlg.addEventListener('close', onClose);
+    dlg.showModal();
+    input.focus();
+  });
+}
+
+async function signWithCertificate(tab) {
+  if (!tab) return toast('Open a document first', true);
+  if (typeof PdfSigner === 'undefined' || typeof forge === 'undefined') return toast('The signer did not load', true);
+  const file = await pickFile('.p12,.pfx,application/x-pkcs12');
+  if (!file) return;
+  const password = await askPassword(file.name);
+  if (password === null) return;
+  try {
+    toast('Signing…');
+    const unsigned = await buildPdf(tab, tab.pages, { signable: true });
+    const p12 = PdfSigner.toBin(new Uint8Array(await file.arrayBuffer()));
+    const { bytes, signer } = PdfSigner.sign(forge, unsigned, { p12, password });
+    download(bytes, `${tab.name.replace(/\.pdf$/i, '')}-signed.pdf`);
+    toast(`Signed copy saved, signed by ${signer}. The open document is unchanged.`);
+  } catch (err) {
+    toast(`Signing failed: ${err.message}`, true);
+  }
+}
+
 // ---------- compare ----------
 function wordsOfPage(content) {
   let s = '';
@@ -2121,11 +2165,11 @@ function diffWords(a, b) {
   return out;
 }
 
-function pickFile() {
+function pickFile(accept = '.pdf,application/pdf') {
   return new Promise((resolve) => {
     const inp = document.createElement('input');
     inp.type = 'file';
-    inp.accept = '.pdf,application/pdf';
+    inp.accept = accept;
     inp.addEventListener('change', () => resolve(inp.files[0] || null));
     inp.addEventListener('cancel', () => resolve(null));
     inp.click();
@@ -2511,6 +2555,7 @@ const COMMANDS = {
   'flatten-forms': () => toggleFlattenForms(tabOf()),
   compare: () => comparePdfs(tabOf()),
   ocr: () => runOcr(tabOf()),
+  'sign-cert': () => signWithCertificate(tabOf()),
   'clear-bookmarks': () => clearBookmarks(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),

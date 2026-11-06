@@ -138,6 +138,7 @@
 
   <div class="panel" data-panel="advanced">
     <button data-act="ocr" title="Recognise English, Greek and Turkish text on every page and add it as invisible, searchable text">Make searchable (OCR)</button>
+    <button data-act="sign-cert" title="Sign with your own certificate (.p12 or .pfx). Saves a signed copy; the open document is not changed.">Sign with certificate</button>
   </div>
 
   <div class="panel" data-panel="view">
@@ -186,7 +187,7 @@
   <button type="button" class="sb-btn" id="stat-zoom" title="Change zoom">100%</button>
   <button type="button" class="sb-btn" id="stat-tool" title="Choose an annotation tool">Select</button>
   <button type="button" class="sb-btn" id="stat-dirty" title="Save this document" hidden>Unsaved changes</button>
-  <button type="button" class="sb-btn ver" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.10 · local</button>
+  <button type="button" class="sb-btn ver" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.11 · local</button>
 </footer>
 
 <dialog id="namedlg" aria-labelledby="namedlg-title">
@@ -197,6 +198,19 @@
     <div class="dialog-actions">
       <button value="cancel" formnovalidate>Cancel</button>
       <button value="ok" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="pwdlg" aria-labelledby="pwdlg-title">
+  <form method="dialog" id="pwdform">
+    <h2 id="pwdlg-title">Certificate password</h2>
+    <p class="fine" id="pwdlg-file"></p>
+    <label for="pwdinput">Password</label>
+    <input id="pwdinput" type="password" autocomplete="off">
+    <div class="dialog-actions">
+      <button value="ok" class="primary">Sign</button>
+      <button value="cancel" formnovalidate>Cancel</button>
     </div>
   </form>
 </dialog>
@@ -245,7 +259,7 @@
 <dialog id="aboutdlg" aria-labelledby="aboutdlg-title">
   <form method="dialog" class="about">
     <h2 id="aboutdlg-title">About Tabbed PDF</h2>
-    <p class="fine">Version 2026.11.10 · Same layout as Tabbed Word and Tabbed Slides.</p>
+    <p class="fine">Version 2026.11.11 · Same layout as Tabbed Word and Tabbed Slides.</p>
     <p>Open, create, annotate, sign, rearrange and export PDF files in your browser. Nothing leaves your device.</p>
     <h3>Keyboard shortcuts</h3>
     <table class="shortcuts">
@@ -260,7 +274,7 @@
       <tr><td>Esc</td><td>Back to Select tool, clear selection</td></tr>
     </table>
     <h3>Credits</h3>
-    <p class="fine">pdf.js 4.10.38 (rendering) · pdf-lib 1.17.1 (editing and export) · @pdf-lib/fontkit 1.1.1 · DejaVu Sans (typed text) · Tesseract.js 7.0.0 with English, Greek and Turkish recognition data (OCR). Licences: third-party-licenses.txt.</p>
+    <p class="fine">pdf.js 4.10.38 (rendering) · pdf-lib 1.17.1 (editing and export) · @pdf-lib/fontkit 1.1.1 · DejaVu Sans (typed text) · Tesseract.js 7.0.0 with English, Greek and Turkish recognition data (OCR) · node-forge 1.3.1 (certificate signing). Licences: third-party-licenses.txt.</p>
     <h3>Made by</h3>
     <p>The Last Byzantine, MMXXVI. Sharing is love!</p>
     <p>For any bug or suggestion, please contact me at <a href="mailto:thelastbyzantine@proton.me">thelastbyzantine@proton.me</a>.</p>
@@ -277,6 +291,8 @@
 <script src="vendor/pdf-lib/pdf-lib.min.js"></script>
 <script src="vendor/fontkit/fontkit.umd.min.js"></script>
 <script src="vendor/tesseract/tesseract.min.js"></script>
+<script src="vendor/forge/forge.min.js"></script>
+<script src="signing.js"></script>
 <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -21,6 +21,7 @@ Everything runs on the device. Files are never uploaded.
   Six colours, four line widths, text sizes. Double-click a text box to edit it.
 - **Insert**: add JPG, PNG or HEIC images as new pages (each fitted to an A4 page, in its own orientation); HEIC opens only in Safari and other Apple browsers.
 - **Advanced → Make searchable (OCR)**: recognises English, Greek and Turkish text on every page and adds it as invisible, searchable text. It runs in your browser; nothing is uploaded. Recognition is approximate, so check the result. Other languages are not recognised.
+- **Advanced → Sign with certificate**: signs with your own certificate file (.p12 or .pfx, with its password) and saves a signed copy as a new file. The signature uses SHA-256 in the standard PDF form (PKCS#7, detached). It is invisible on the page. The open document is not changed. The file is read in your browser and never uploaded.
 - **Sign**: draw, type (three styles) or upload a signature image; place it on a page. Remembered on the device if you tick the box.
 - **Symbols**: ✓ ✗ ● ○ ★ →, placed as vector graphics.
 - **Undo / redo**: Ctrl+Z / Ctrl+Shift+Z for every edit, page operation and annotation.
@@ -77,6 +78,7 @@ Or create a Pages project from a Git repo with no build command and output direc
 - Page rotation keeps annotations in place on the page. Upright items (text, signatures, symbols) stay upright.
 - Save writes back in place only in Chrome and Edge (File System Access API). Other browsers download the file.
 - Session restore and form-field filling are not in this version.
+- Signing: the signed copy has no visible signature. A certificate you made yourself is shown as untrusted by PDF readers; use a certificate from a trusted provider for signatures that must be trusted. Signing removes any existing signatures in the file. Verify a signed copy in Adobe Reader or another PDF reader.
 - OCR covers English, Greek and Turkish only. The searchable text is invisible: the page looks the same, and the recognised words may differ slightly from the scan.
 
 ## Licence
