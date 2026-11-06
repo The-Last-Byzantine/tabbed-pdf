@@ -82,7 +82,7 @@ const state = {
   tabs: [],
   active: null,
   tool: 'select',
-  color: PALETTE[0],
+  color: PALETTE[5], // dark ink by default; the palette still offers blue
   sw: 2,
   fs: 14,
   symbol: 'check',
@@ -2662,10 +2662,11 @@ function wire() {
   window.addEventListener('resize', () => closeMenu());
 
   // Status bar: each item opens the control that changes it, as in Tabbed Word
-  $('#stat-pages').addEventListener('click', () => openRibbon('pages'));
+  const menuBtn = (name) => $(`#ribbon-tabs [data-panel="${name}"]`);
+  $('#stat-pages').addEventListener('click', () => openMenuFor(menuBtn('pages')));
   $('#stat-page').addEventListener('click', () => goToPagePrompt());
-  $('#stat-zoom').addEventListener('click', () => { openRibbon('view'); $('#zoomsel').focus(); });
-  $('#stat-tool').addEventListener('click', () => openRibbon('annotate'));
+  $('#stat-zoom').addEventListener('click', () => openMenuFor(menuBtn('view')));
+  $('#stat-tool').addEventListener('click', () => openMenuFor(menuBtn('annotate')));
   $('#stat-dirty').addEventListener('click', () => COMMANDS.save());
   $('#stat-version').addEventListener('click', () => $('#aboutbtn').click());
 
