@@ -105,6 +105,7 @@ function newTab({ name, handle = null, dirty = false }) {
     dirty,
     sources: new Map(), // srcId -> { bytes, pdf }
     meta: {}, // document properties: title, author, subject (written on save)
+    bookmarks: [], // { uid, title } per page, written as the PDF outline on save
     pages: [],
     undo: [],
     redo: [],
@@ -726,6 +727,30 @@ function editDocumentProperties(tab) {
   toast('Document properties updated');
 }
 
+// Bookmark the current page (or rename it if it already has one).
+function bookmarkCurrentPage(tab) {
+  if (!tab || !tab.pages.length) return toast('Open a document first', true);
+  const pg = tab.pages[tab.current];
+  const existing = tab.bookmarks.find((b) => b.uid === pg.uid);
+  const title = window.prompt('Bookmark name for this page:', existing ? existing.title : `Page ${tab.current + 1}`);
+  if (title === null) return;
+  if (!title.trim()) return toast('A bookmark needs a name', true);
+  if (existing) existing.title = title.trim();
+  else tab.bookmarks.push({ uid: pg.uid, title: title.trim() });
+  tab.dirty = true;
+  renderStatus(tab);
+  toast(`Bookmark saved: ${title.trim()}`);
+}
+
+function clearBookmarks(tab) {
+  if (!tab) return toast('Open a document first', true);
+  if (!tab.bookmarks.length) return toast('There are no bookmarks');
+  tab.bookmarks = [];
+  tab.dirty = true;
+  renderStatus(tab);
+  toast('Bookmarks cleared');
+}
+
 // Images become new pages. Each image is fitted, centred, on an A4 page in its own orientation.
 // PNG is kept as it is; JPG, HEIC and other formats are re-encoded as JPEG through a canvas.
 // HEIC decodes only where the browser can read it (Safari and other Apple browsers).
@@ -1335,6 +1360,40 @@ function dataUrlBytes(dataUrl) {
 }
 
 // Build the output PDF for the given page entries. Annotations are drawn as vectors.
+// Bookmarks become the PDF outline (the sidebar list in a reader). Each one points at its page.
+function addBookmarksPdf(out, tab, pages) {
+  const marks = (tab.bookmarks || [])
+    .map((b) => ({ title: b.title, idx: pages.findIndex((p) => p.uid === b.uid) }))
+    .filter((m) => m.idx >= 0)
+    .sort((a, b) => a.idx - b.idx);
+  if (!marks.length) return;
+  const { PDFDict, PDFArray, PDFName, PDFNull, PDFNumber, PDFHexString } = PDFLib;
+  const ctx = out.context;
+  const pageRefs = out.getPages().map((p) => p.ref);
+  const outlineRef = ctx.nextRef();
+  const refs = marks.map(() => ctx.nextRef());
+  marks.forEach((m, i) => {
+    const dest = PDFArray.withContext(ctx);
+    dest.push(pageRefs[m.idx]);
+    dest.push(PDFName.of('XYZ'));
+    dest.push(PDFNull); dest.push(PDFNull); dest.push(PDFNull);
+    const d = PDFDict.withContext(ctx);
+    d.set(PDFName.of('Title'), PDFHexString.fromText(m.title));
+    d.set(PDFName.of('Parent'), outlineRef);
+    d.set(PDFName.of('Dest'), dest);
+    if (i > 0) d.set(PDFName.of('Prev'), refs[i - 1]);
+    if (i < refs.length - 1) d.set(PDFName.of('Next'), refs[i + 1]);
+    ctx.assign(refs[i], d);
+  });
+  const root = PDFDict.withContext(ctx);
+  root.set(PDFName.of('Type'), PDFName.of('Outlines'));
+  root.set(PDFName.of('First'), refs[0]);
+  root.set(PDFName.of('Last'), refs[refs.length - 1]);
+  root.set(PDFName.of('Count'), PDFNumber.of(refs.length));
+  ctx.assign(outlineRef, root);
+  out.catalog.set(PDFName.of('Outlines'), outlineRef);
+}
+
 async function buildPdf(tab, pages) {
   const out = await PDFDocument.create();
   out.registerFontkit(fontkit);
@@ -1379,6 +1438,7 @@ async function buildPdf(tab, pages) {
       }
     }
   }
+  addBookmarksPdf(out, tab, pages);
   const meta = tab.meta || {};
   if (meta.title) out.setTitle(meta.title);
   if (meta.author) out.setAuthor(meta.author);
@@ -1942,6 +2002,8 @@ const COMMANDS = {
   'page-numbers': () => addPageNumbers(tabOf()),
   'header-footer': () => addHeaderFooter(tabOf()),
   'doc-properties': () => editDocumentProperties(tabOf()),
+  'bookmark-page': () => bookmarkCurrentPage(tabOf()),
+  'clear-bookmarks': () => clearBookmarks(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),
   portrait: () => orientSelected(tabOf(), 'portrait'),
