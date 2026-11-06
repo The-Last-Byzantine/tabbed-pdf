@@ -624,8 +624,9 @@ header small { display: none; }
 #stat-dirty { color: var(--w97-selb); }
 #viewer { background: var(--viewer-bg); }
 
-/* v2026.11.4: the two blue bands at the top keep their gradient but carry no text. */
-header > * { display: none !important; }
+/* v2026.11.5: the top band shows only the name; the second band keeps its gradient with no text. */
+header > span { display: none !important; }
+header h1 { display: block !important; font-size: 13px !important; font-weight: 700; }
 header { padding: 3px 8px !important; min-height: 0; }
 #appstate > * { display: none !important; }
 #appstate { padding: 2px 8px !important; min-height: 0; }
