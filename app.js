@@ -2404,7 +2404,8 @@ function showPanel(name) {
     b.classList.toggle('selected', on);
     b.setAttribute('aria-selected', String(on));
   }
-  for (const p of $$('#toolbar .panel')) p.classList.toggle('selected', p.dataset.panel === name);
+  // The standard bar under the menu stays fixed (as in Word 97): it always shows the File panel.
+  for (const p of $$('#toolbar .panel')) p.classList.toggle('selected', p.dataset.panel === 'home');
 }
 
 // ---------- menus (Tabbed Word style): each menu opens a dropdown of its commands,
@@ -2422,7 +2423,6 @@ function openMenuFor(btn) {
   if (openMenuState && openMenuState.btn === btn) return closeMenu();
   closeMenu();
   const name = btn.dataset.panel;
-  showPanel(name);
   const panel = document.querySelector(`#toolbar .panel[data-panel="${name}"]`);
   if (!panel) return;
   const pop = document.createElement('div');
@@ -2430,10 +2430,33 @@ function openMenuFor(btn) {
   pop.setAttribute('role', 'menu');
   const nodes = [];
   for (const child of panel.children) {
-    if (child.classList.contains('tool-group')) nodes.push(...child.children); else nodes.push(child);
+    if (child.classList.contains('tool-group') && !child.classList.contains('symbols') && !child.classList.contains('swatches')) nodes.push(...child.children); else nodes.push(child);
   }
   for (const node of nodes) {
     if (node.classList.contains('sep')) { if (pop.lastElementChild && pop.lastElementChild.tagName !== 'HR') pop.append(document.createElement('hr')); continue; }
+    // Keep formatting controls accessible inside the menu, without an annotation bar.
+    if (node.tagName === 'SELECT') {
+      const row = document.createElement('label');
+      row.className = 'menu-control';
+      row.textContent = node.title + ' ';
+      const control = node.cloneNode(true);
+      control.removeAttribute('id');
+      control.value = node.value;
+      control.addEventListener('change', () => {
+        node.value = control.value;
+        node.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      row.append(control); pop.append(row); continue;
+    }
+    if (node.classList.contains('swatches') || node.classList.contains('symbols')) {
+      const row = document.createElement('div'); row.className = 'menu-options';
+      for (const original of node.querySelectorAll('button')) {
+        const copy = original.cloneNode(true); copy.removeAttribute('id');
+        copy.addEventListener('click', () => { original.click(); closeMenu(); });
+        row.append(copy);
+      }
+      pop.append(row); continue;
+    }
     if (node.tagName !== 'BUTTON' || node.hidden) continue;
     const item = document.createElement('button');
     item.type = 'button';
@@ -2661,14 +2684,7 @@ function wire() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && openMenuState) closeMenu(); });
   window.addEventListener('resize', () => closeMenu());
 
-  // Status bar: each item opens the control that changes it, as in Tabbed Word
-  const menuBtn = (name) => $(`#ribbon-tabs [data-panel="${name}"]`);
-  $('#stat-pages').addEventListener('click', () => openMenuFor(menuBtn('pages')));
-  $('#stat-page').addEventListener('click', () => goToPagePrompt());
-  $('#stat-zoom').addEventListener('click', () => openMenuFor(menuBtn('view')));
-  $('#stat-tool').addEventListener('click', () => openMenuFor(menuBtn('annotate')));
-  $('#stat-dirty').addEventListener('click', () => COMMANDS.save());
-  $('#stat-version').addEventListener('click', () => $('#aboutbtn').click());
+  // Status bar: display only, as before. Its items are not buttons and do nothing when clicked.
 
   // Icons on the command buttons; the text stays as the accessible name and tooltip
   for (const b of $$('#toolbar button[data-act], #toolbar button[data-tool]')) {

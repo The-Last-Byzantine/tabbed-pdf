@@ -44,7 +44,7 @@
   <button type="button" id="aboutbtn" class="info-btn" title="About Tabbed PDF, keyboard shortcuts and credits" aria-label="About Tabbed PDF, keyboard shortcuts and credits" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01"/></svg></button>
 </nav>
 
-<nav id="toolbar" aria-label="Ribbon commands">
+<nav id="toolbar" aria-label="Standard toolbar">
   <div class="panel selected" data-panel="home">
     <button data-act="new" class="primary" title="New blank document (Ctrl+N)">New</button>
     <button data-act="open" title="Open a PDF (Ctrl+O)">Open</button>
@@ -188,12 +188,12 @@
 </main>
 
 <footer id="statusbar">
-  <button type="button" class="sb-btn" id="stat-pages" title="Show the Pages tab">0 pages</button>
-  <button type="button" class="sb-btn" id="stat-page" title="Go to a page">—</button>
-  <button type="button" class="sb-btn" id="stat-zoom" title="Change zoom">100%</button>
-  <button type="button" class="sb-btn" id="stat-tool" title="Choose an annotation tool">Select</button>
-  <button type="button" class="sb-btn" id="stat-dirty" title="Save this document" hidden>Unsaved changes</button>
-  <button type="button" class="sb-btn ver" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.19</button>
+  <button type="button" class="sb-btn" tabindex="-1" id="stat-pages" title="Show the Pages tab">0 pages</button>
+  <button type="button" class="sb-btn" tabindex="-1" id="stat-page" title="Go to a page">—</button>
+  <button type="button" class="sb-btn" tabindex="-1" id="stat-zoom" title="Change zoom">100%</button>
+  <button type="button" class="sb-btn" tabindex="-1" id="stat-tool" title="Choose an annotation tool">Select</button>
+  <button type="button" class="sb-btn" tabindex="-1" id="stat-dirty" title="Save this document" hidden>Unsaved changes</button>
+  <button type="button" class="sb-btn ver" tabindex="-1" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.20</button>
 </footer>
 
 <dialog id="namedlg" aria-labelledby="namedlg-title">
@@ -265,7 +265,7 @@
 <dialog id="aboutdlg" class="about-dialog" aria-labelledby="aboutdlg-title">
   <form method="dialog" class="about">
     <h2 id="aboutdlg-title">About Tabbed PDF</h2>
-    <p class="fine">Version 2026.11.19</p>
+    <p class="fine">Version 2026.11.20</p>
     <p>Open, annotate, fill in, sign, rearrange and export PDF files in your browser. Your files are not uploaded.</p>
     <p>Part of the Tabbed Apps family, with Tabbed Word and Tabbed Slides.</p>
     <details>

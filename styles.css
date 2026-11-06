@@ -829,3 +829,45 @@ button.primary, .primary { border-color: #0A246A !important; }
 :root { --muted: #4b4a47; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --muted: #cfc9c0; } }
 :root[data-theme="dark"] { --muted: #cfc9c0; }
+
+/* Classic Word 97 shell: one face colour, fixed single-row command bar. */
+:root, :root[data-theme], :root:not([data-theme="light"]) {
+  color-scheme: light;
+  --w97-face: #c0c0c0; --w97-light: #ffffff; --w97-shadow: #808080;
+  --w97-dark: #404040; --bg: #c0c0c0; --ink: #000000;
+  --muted: #444444; --viewer-bg: #c0c0c0; --ribbon: #c0c0c0;
+  --focus: #000080;
+}
+body { font-family: Tahoma, "MS Sans Serif", Arial, sans-serif; }
+#appstate { display: none !important; }
+#ribbon-tabs { flex: 0 0 24px; height: 24px; position: relative; top: auto; background: #c0c0c0 !important; border-bottom: 0; }
+#ribbon-tabs button, #ribbon-tabs button.selected { color: #000 !important; font: 12px Tahoma, Arial, sans-serif; font-weight: 400; box-shadow: none !important; background: transparent; }
+#toolbar { flex: 0 0 30px; height: 30px; padding: 2px 5px !important; position: relative !important; top: auto !important; background: #c0c0c0 !important; box-shadow: none; border-top: 1px solid #fff; border-bottom: 1px solid #808080; overflow-x: auto; overflow-y: hidden; }
+#toolbar .panel { display: none !important; }
+#toolbar .panel[data-panel="home"] { display: flex !important; flex-wrap: nowrap; height: 25px; gap: 2px; width: max-content; }
+#toolbar .panel button.ico, #toolbar button.ico.narrow, #toolbar button.ic { width: 24px; min-width: 24px; height: 24px; min-height: 24px; padding: 2px; }
+#toolbar .panel button.ico svg, #toolbar button.ic svg { width: 17px; height: 17px; color: #222 !important; stroke: #222 !important; }
+#toolbar button, #toolbar button.primary { background: #c0c0c0 !important; color: #000 !important; border: 1px solid transparent !important; box-shadow: none; }
+#toolbar button:hover:not(:disabled) { border-color: #fff #808080 #808080 #fff !important; }
+#toolbar button:active:not(:disabled) { border-color: #808080 #fff #fff #808080 !important; }
+#toolbar .sep { height: 20px; margin: 0 4px; border-left: 1px solid #808080; border-right: 1px solid #fff; }
+#tabs, #thumbs, #viewer, #main, .empty { background: #c0c0c0 !important; color: #000; }
+#tabs:empty { display: none; }
+#tabs { border-color: #808080; }
+.doc-tab, .doc-tab.active { background: #c0c0c0; color: #000; border-radius: 0; }
+#empty h2 { color: #000 !important; }
+#empty p, #empty .fine { color: #444 !important; }
+#statusbar { flex-shrink: 0; min-height: 25px; padding: 2px 4px; gap: 3px; background: #c0c0c0 !important; color: #000 !important; }
+#statusbar .sb-btn, #statusbar .ver { background: #c0c0c0 !important; color: #000 !important; border-color: #808080 #fff #fff #808080 !important; font: 11px Tahoma, Arial, sans-serif; padding: 2px 8px; border-radius: 0; }
+.menu-pop { max-height: calc(100dvh - 65px); max-width: calc(100vw - 8px); overflow: auto; background: #c0c0c0 !important; border-color: #fff #404040 #404040 #fff !important; color: #000 !important; font-family: Tahoma, Arial, sans-serif; }
+.menu-pop button { color: #000 !important; }
+.menu-pop button:hover:not(:disabled) { color: #fff !important; background: #000080; }
+.menu-pop button:disabled { color: #808080 !important; }
+.menu-control { display: flex; justify-content: space-between; align-items: center; padding: 4px 14px 4px 26px; gap: 12px; }
+.menu-options { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 14px 6px 26px; max-width: 290px; }
+.menu-options button { width: 24px; height: 24px; padding: 2px; border: 1px solid #808080; }
+@media (max-width: 600px) { #statusbar { gap: 2px; } #statusbar .sb-btn { padding: 2px 4px; } #statusbar .ver { font-size: 10px; } }
+
+/* v2026.11.20: the status bar is display only, not clickable */
+#statusbar .sb-btn { pointer-events: none; cursor: default; text-decoration: none !important; }
+#statusbar .sb-btn:hover { background: inherit; }
