@@ -871,3 +871,19 @@ body { font-family: Tahoma, "MS Sans Serif", Arial, sans-serif; }
 /* v2026.11.20: the status bar is display only, not clickable */
 #statusbar .sb-btn { pointer-events: none; cursor: default; text-decoration: none !important; }
 #statusbar .sb-btn:hover { background: inherit; }
+
+/* v2026.11.21: the standard bar under the menu looks like Tabbed Word's: flat icons, pressed state, paired dividers */
+#toolbar { height: auto !important; min-height: 40px; flex: 0 0 auto !important; padding: 4px 6px !important; background: #d4d0c8 !important; border-top: 1px solid #fff; border-bottom: 1px solid #808080; }
+#toolbar .panel[data-panel="home"] { height: 32px !important; display: flex !important; align-items: center; gap: 0; width: max-content; }
+#toolbar .panel[data-panel="home"] button.ico, #toolbar .panel[data-panel="home"] button.ic {
+  width: 30px !important; min-width: 30px !important; height: 30px !important; min-height: 30px !important; padding: 3px !important;
+  margin: 0 1px; border: 1px solid transparent !important; background: transparent !important; box-shadow: none !important; color: #1f2937 !important;
+}
+#toolbar .panel[data-panel="home"] button.ico svg { width: 19px !important; height: 19px !important; color: #1f2937 !important; stroke: #1f2937 !important; stroke-width: 1.6 !important; }
+#toolbar .panel[data-panel="home"] button.ico:hover:not(:disabled) { border-color: #fff #808080 #808080 #fff !important; background: #e4e0d8 !important; }
+#toolbar .panel[data-panel="home"] button.ico:active:not(:disabled), #toolbar .panel[data-panel="home"] button.ico[aria-pressed="true"] { border-color: #808080 #fff #fff #808080 !important; background: #bfbbb3 !important; }
+#toolbar .panel[data-panel="home"] button.ico:disabled { opacity: .4; }
+#toolbar .panel[data-panel="home"] .sep { width: 0; height: 22px; margin: 0 5px; border-left: 1px solid #8a857d; border-right: 1px solid #fff; }
+:root[data-theme="dark"] #toolbar { background: #3a3633 !important; }
+:root[data-theme="dark"] #toolbar .panel[data-panel="home"] button.ico { color: #f3f4f6 !important; }
+:root[data-theme="dark"] #toolbar .panel[data-panel="home"] button.ico svg { color: #f3f4f6 !important; stroke: #f3f4f6 !important; }
