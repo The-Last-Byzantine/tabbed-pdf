@@ -664,6 +664,24 @@ async function insertBytes(tab, bytes) {
   toast(`Inserted ${added.length} page${added.length === 1 ? '' : 's'}`);
 }
 
+// Page numbers are ordinary text items, so they can be moved, deleted or undone like any other item.
+// Applies to the selected pages, or to every page when nothing is selected.
+async function addPageNumbers(tab) {
+  if (!tab || !tab.pages.length) return toast('Open a document first', true);
+  const chosen = tab.selPages.size ? tab.pages.filter((p) => tab.selPages.has(p.uid)) : tab.pages;
+  const fs = 10;
+  pushUndo(tab);
+  for (const pg of chosen) {
+    const idx = tab.pages.indexOf(pg);
+    const info = await pageInfo(tab, pg);
+    const text = String(idx + 1);
+    const w = text.length * fs * 0.6;
+    pg.items.push({ uid: uid(), type: 'text', x: info.Wd / 2 - w / 2, y: info.Hd - 30, w, h: fs * 1.4, text, color: '#000000', fs });
+  }
+  renderAll(tab);
+  toast(`Numbered ${chosen.length} page${chosen.length === 1 ? '' : 's'}`);
+}
+
 // Images become new pages. Each image is fitted, centred, on an A4 page in its own orientation.
 // PNG is kept as it is; JPG, HEIC and other formats are re-encoded as JPEG through a canvas.
 // HEIC decodes only where the browser can read it (Safari and other Apple browsers).
@@ -1873,6 +1891,7 @@ const COMMANDS = {
   'merge-open': () => mergeOpenDocuments(),
   'split-pages': () => splitIntoPages(tabOf()),
   'save-separate': () => { const t = tabOf(); if (t) splitIntoPages(t, selectedPageUids(t)); },
+  'page-numbers': () => addPageNumbers(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),
   portrait: () => orientSelected(tabOf(), 'portrait'),
