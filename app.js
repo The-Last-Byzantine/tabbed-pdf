@@ -574,7 +574,7 @@ function renderStatus(tab) {
 const TOOL_NAMES = {
   select: 'Select', highlight: 'Highlight', ink: 'Pen', text: 'Text', rect: 'Rectangle',
   ellipse: 'Ellipse', arrow: 'Arrow', sign: 'Signature', symbol: 'Symbol',
-  cover: 'White-out', textfield: 'Text field', checkbox: 'Checkbox',
+  cover: 'White-out', textfield: 'Text field', checkbox: 'Checkbox', 'edit-text': 'Edit text',
 };
 
 // ---------- tabs ----------
@@ -805,6 +805,53 @@ function clearBookmarks(tab) {
   tab.dirty = true;
   renderStatus(tab);
   toast('Bookmarks cleared');
+}
+
+// Text runs of a page, in display coordinates (upright pages only). Cached on the view.
+async function textRunsOf(view) {
+  if (view.runs) return view.runs;
+  const info = view.info;
+  if (!info.pdfPage) return (view.runs = []);
+  const tc = await info.pdfPage.getTextContent();
+  const runs = [];
+  for (const it of tc.items) {
+    if (!it.str || !it.str.trim()) continue;
+    const fs = Math.hypot(it.transform[2], it.transform[3]) || it.height || 10;
+    const a = it.transform[4] - info.ox;
+    const bBase = it.transform[5] - info.oy;
+    const v1 = info.Hb - bBase;           // baseline, top-left origin
+    runs.push({ str: it.str, u0: a, u1: a + it.width, v0: v1 - fs, v1, fs });
+  }
+  return (view.runs = runs);
+}
+
+// Edit text: the chosen run is covered in white and the new text is placed on top.
+// The original characters stay in the file under the white box; they are hidden, not removed.
+async function editTextAt(tab, view, p) {
+  if (view.info.R !== 0) return toast('Edit text works on upright pages for now', true);
+  const runs = await textRunsOf(view);
+  const pad = 2;
+  const hit = runs.find((r) => p.u >= r.u0 - pad && p.u <= r.u1 + pad && p.v >= r.v0 - pad && p.v <= r.v1 + pad);
+  if (!hit) return toast('No text under the pointer', true);
+  const next = window.prompt('Replace the text with:', hit.str);
+  if (next === null || next === hit.str) return;
+  pushUndo(tab);
+  const w = hit.u1 - hit.u0 + 2 * pad;
+  const h = hit.v1 - hit.v0 + 2 * pad;
+  view.pg.items.push({ uid: uid(), type: 'cover', x: hit.u0 - pad, y: hit.v0 - pad, w, h });
+  view.pg.items.push({ uid: uid(), type: 'text', x: hit.u0, y: hit.v0 - 1, w, h: hit.fs * 1.4, text: next, color: '#000000', fs: hit.fs });
+  tab.dirty = true;
+  renderAll(tab);
+  toast('Text replaced. The original characters remain under the white box in the file.');
+}
+
+// Flatten forms on save: fields become plain page content and can no longer be filled in.
+function toggleFlattenForms(tab) {
+  if (!tab) return toast('Open a document first', true);
+  tab.flattenForms = !tab.flattenForms;
+  tab.dirty = true;
+  renderStatus(tab);
+  toast(tab.flattenForms ? 'Forms will be flattened when you save' : 'Forms stay fillable when you save');
 }
 
 // Images become new pages. Each image is fitted, centred, on an A4 page in its own orientation.
@@ -1170,6 +1217,10 @@ function onPointerDown(e) {
   const color = state.color;
   const sw = state.sw;
 
+  if (tool === 'edit-text') {
+    editTextAt(tab, view, p);
+    return;
+  }
   if (tool === 'text') {
     pushUndo(tab);
     const item = { uid: uid(), type: 'text', x: p.u, y: p.v, w: 160, h: state.fs * 1.4, text: '', color, fs: state.fs };
@@ -1417,6 +1468,100 @@ function dataUrlBytes(dataUrl) {
 }
 
 // Build the output PDF for the given page entries. Annotations are drawn as vectors.
+// Form fields that are already in an opened PDF are copied back as real, fillable fields.
+// Page copying brings the widget boxes over but not the form itself, so the boxes are removed
+// and each field is recreated from its source (text, checkbox and dropdown; other kinds are reported).
+function carryFormFields(out, pages, libs) {
+  const { PDFName, PDFDict, PDFArray, PDFTextField, PDFCheckBox, PDFDropdown } = PDFLib;
+  let skipped = 0;
+  const hasWidgets = [...libs.values()].some((lib) => lib.catalog.lookup(PDFName.of('AcroForm')));
+  if (!hasWidgets) return 0;
+  for (const page of out.getPages()) {
+    const annots = page.node.Annots();
+    if (!annots) continue;
+    const keep = PDFArray.withContext(out.context);
+    for (let i = 0; i < annots.size(); i++) {
+      const a = out.context.lookup(annots.get(i), PDFDict);
+      if (a && a.get(PDFName.of('Subtype'))?.toString() === '/Widget') continue;
+      keep.push(annots.get(i));
+    }
+    page.node.set(PDFName.of('Annots'), keep);
+  }
+  const form = out.getForm();
+  const made = new Map();
+  const nameOf = new Map();
+  const taken = new Set();
+  let n = 0;
+  for (const [srcId, lib] of libs) {
+    if (!lib.catalog.lookup(PDFName.of('AcroForm'))) continue;
+    const srcForm = lib.getForm();
+    const srcPages = lib.getPages();
+    for (const field of srcForm.getFields()) {
+      // Keep the original field name; add the source prefix only when another field already has it.
+      const key = `${srcId}|${field.getName()}`;
+      if (!nameOf.has(key)) {
+        let nm = field.getName().replace(/[^A-Za-z0-9_.-]/g, '_') || 'field';
+        if (taken.has(nm)) nm = `${srcId}-${nm}`;
+        taken.add(nm);
+        nameOf.set(key, nm);
+      }
+      const name = nameOf.get(key);
+      for (const widget of field.acroField.getWidgets()) {
+        // Which source page holds this widget, and which output page is that page's copy.
+        let j = -1;
+        srcPages.forEach((sp, idx) => {
+          const annots = sp.node.Annots();
+          if (j >= 0 || !annots) return;
+          for (let i = 0; i < annots.size(); i++) {
+            if (lib.context.lookup(annots.get(i)) === widget.dict) { j = idx; return; }
+          }
+        });
+        if (j < 0) continue;
+        const outIdx = pages.findIndex((pg) => pg.src === srcId && pg.index === j);
+        if (outIdx < 0) continue;
+        const page = out.getPage(outIdx);
+        const r = widget.getRectangle();
+        const opts = { x: r.x, y: r.y, width: r.width, height: r.height };
+        try {
+          if (field instanceof PDFTextField) {
+            // One field per source field: the first widget creates it, later widgets share it.
+            if (!made.has(name)) {
+              const tf = form.createTextField(name);
+              tf.setText(field.getText() || '');
+              made.set(name, tf);
+            }
+            made.get(name).addToPage(page, opts);
+          } else if (field instanceof PDFCheckBox) {
+            if (!made.has(name)) {
+              const cb = form.createCheckBox(name);
+              if (field.isChecked()) cb.check();
+              made.set(name, cb);
+            }
+            made.get(name).addToPage(page, opts);
+          } else if (field instanceof PDFDropdown) {
+            if (!made.has(name)) {
+              const dd = form.createDropdown(name);
+              dd.setOptions(field.getOptions());
+              const sel = field.getSelected();
+              if (sel.length) dd.select(sel[0]);
+              made.set(name, dd);
+            }
+            made.get(name).addToPage(page, opts);
+          } else {
+            skipped++;
+          }
+        } catch (err) {
+          console.warn('A form field could not be copied', name, err);
+          skipped++;
+        }
+      }
+      n++;
+    }
+  }
+  if (skipped) console.warn(`${skipped} form field(s) could not be copied`);
+  return skipped;
+}
+
 // Bookmarks become the PDF outline (the sidebar list in a reader). Each one points at its page.
 function addBookmarksPdf(out, tab, pages) {
   const marks = (tab.bookmarks || [])
@@ -1502,6 +1647,8 @@ async function buildPdf(tab, pages) {
       }
     }
   }
+  carryFormFields(out, pages, libs);
+  if (tab.flattenForms) out.getForm().flatten();
   addBookmarksPdf(out, tab, pages);
   const meta = tab.meta || {};
   if (meta.title) out.setTitle(meta.title);
@@ -2093,6 +2240,7 @@ const COMMANDS = {
   'bookmark-page': () => bookmarkCurrentPage(tabOf()),
   'crop-pages': () => cropPages(tabOf()),
   'clear-crop': () => clearCrop(tabOf()),
+  'flatten-forms': () => toggleFlattenForms(tabOf()),
   'clear-bookmarks': () => clearBookmarks(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),
