@@ -13,7 +13,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.mjs';
 
 const { PDFDocument, rgb, degrees, LineCapStyle, StandardFonts } = PDFLib;
 const NS = 'http://www.w3.org/2000/svg';
-const PALETTE = ['#ea580c', '#dc2626', '#facc15', '#16a34a', '#2563eb', '#111827'];
+const PALETTE = ['#2563eb', '#ea580c', '#facc15', '#16a34a', '#dc2626', '#111827'];
 const DEFAULT_PAGE = [595.28, 841.89]; // A4
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 4;
@@ -419,10 +419,10 @@ function makeSvgItem(item, z) {
   } else if (item.type === 'cover') {
     g.append(svgEl('rect', { x: item.x, y: item.y, width: item.w, height: item.h, fill: '#ffffff', stroke: '#c9c9c9', 'stroke-width': 0.5 / z, 'stroke-dasharray': `${3 / z} ${2 / z}` }));
   } else if (item.type === 'textfield' || item.type === 'checkbox') {
-    g.append(svgEl('rect', { x: item.x, y: item.y, width: item.w, height: item.h, fill: '#fff7f7', stroke: '#b91c1c', 'stroke-width': 1 / z, 'stroke-dasharray': `${4 / z} ${3 / z}` }));
+    g.append(svgEl('rect', { x: item.x, y: item.y, width: item.w, height: item.h, fill: '#f5f8ff', stroke: '#2563eb', 'stroke-width': 1 / z, 'stroke-dasharray': `${4 / z} ${3 / z}` }));
     if (item.type === 'checkbox') {
       const m = Math.min(item.w, item.h) * 0.2;
-      g.append(svgEl('path', { d: `M${item.x + m} ${item.y + m}L${item.x + item.w - m} ${item.y + item.h - m}M${item.x + item.w - m} ${item.y + m}L${item.x + m} ${item.y + item.h - m}`, stroke: '#b91c1c', 'stroke-width': 0.8 / z, fill: 'none' }));
+      g.append(svgEl('path', { d: `M${item.x + m} ${item.y + m}L${item.x + item.w - m} ${item.y + item.h - m}M${item.x + item.w - m} ${item.y + m}L${item.x + m} ${item.y + item.h - m}`, stroke: '#2563eb', 'stroke-width': 0.8 / z, fill: 'none' }));
     }
   } else if (item.type === 'image') {
     g.append(svgEl('image', { href: item.data, x: item.x, y: item.y, width: item.w, height: item.h, preserveAspectRatio: 'none' }));
@@ -455,13 +455,13 @@ function selectionEl(item, z) {
   const g = svgEl('g', { class: 'selection', 'pointer-events': 'none' });
   g.append(svgEl('rect', {
     x: b.x - 2 / z, y: b.y - 2 / z, width: b.w + 4 / z, height: b.h + 4 / z,
-    fill: 'none', stroke: '#dc2626', 'stroke-width': 1.25, 'stroke-dasharray': '4 3', 'vector-effect': 'non-scaling-stroke',
+    fill: 'none', stroke: '#2563eb', 'stroke-width': 1.25, 'stroke-dasharray': '4 3', 'vector-effect': 'non-scaling-stroke',
   }));
   if (!['ink', 'arrow'].includes(item.type)) {
     const hs = 9 / z;
     g.append(svgEl('rect', {
       x: b.x + b.w - hs / 2, y: b.y + b.h - hs / 2, width: hs, height: hs,
-      fill: '#dc2626', stroke: '#fff', 'stroke-width': 1 / z, 'data-handle': 'se', style: 'pointer-events:all; cursor:nwse-resize',
+      fill: '#2563eb', stroke: '#fff', 'stroke-width': 1 / z, 'data-handle': 'se', style: 'pointer-events:all; cursor:nwse-resize',
     }));
   }
   return g;

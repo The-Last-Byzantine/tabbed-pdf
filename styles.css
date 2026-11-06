@@ -630,3 +630,25 @@ header h1 { display: block !important; font-size: 13px !important; font-weight: 
 header { padding: 3px 8px !important; min-height: 0; }
 #appstate > * { display: none !important; }
 #appstate { padding: 2px 8px !important; min-height: 0; }
+
+/* v2026.11.6: buttons follow Tabbed Slides' orange. Primary buttons and the active tab and tool take the orange;
+   the rest of the command face stays grey and bevelled. Annotations are blue by default. */
+:root {
+  --w97-selb: #ea580c;
+  --w97-sel: #fed7aa;
+  --accent: #c2410c;
+  --accent-hover: #9a3412;
+}
+:root:not([data-theme="light"]) { --accent: #fdba74; --accent-hover: #fed7aa; }
+:root[data-theme="dark"] { --accent: #fdba74; --accent-hover: #fed7aa; }
+button.primary, .primary {
+  background: #ea580c !important;
+  border-color: #c2410c !important;
+  color: #fff !important;
+}
+button.primary:hover, .primary:hover { background: #c2410c !important; }
+#ribbon-tabs button.selected { box-shadow: inset 0 3px 0 #ea580c !important; }
+#toolbar button.selected, #toolbar button[aria-pressed="true"], #toolbar button.tool.selected {
+  background: #fed7aa !important;
+  border-color: #c2410c #fff #fff #c2410c !important;
+}
