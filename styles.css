@@ -528,7 +528,7 @@ dialog .about a, form.about a { color: var(--accent); }
   --w97-selb: #B3262B;
   --w97-desk: #9C9A95;
   --w97-status: #ECE9D8;
-  --w97-grad: linear-gradient(90deg, #6B0F0F, #F2B8B8);
+  --w97-grad: linear-gradient(90deg, #0A246A, #A6CAF0);
   --w97-ui: Tahoma, Verdana, "Segoe UI", sans-serif;
   --bg: var(--w97-face);
   --ink: #000;
@@ -547,7 +547,7 @@ dialog .about a, form.about a { color: var(--accent); }
     --ribbon: #3A3530; --ribbon-border: #1A1816;
     --viewer-bg: #222020; --header: #4A0C0C;
     --w97-face: #3A3530; --w97-status: #2E2A27;
-    --w97-grad: linear-gradient(90deg, #4A0C0C, #8A4A4A);
+    --w97-grad: linear-gradient(90deg, #0A246A, #3A5A8A);
     --accent: #F2B8B8; --accent-hover: #FFD6D6;
   }
 }
@@ -556,7 +556,7 @@ dialog .about a, form.about a { color: var(--accent); }
   --ribbon: #3A3530; --ribbon-border: #1A1816;
   --viewer-bg: #222020; --header: #4A0C0C;
   --w97-face: #3A3530; --w97-status: #2E2A27;
-  --w97-grad: linear-gradient(90deg, #4A0C0C, #8A4A4A);
+  --w97-grad: linear-gradient(90deg, #0A246A, #3A5A8A);
   --accent: #F2B8B8; --accent-hover: #FFD6D6;
 }
 
