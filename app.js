@@ -13,7 +13,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.mjs';
 
 const { PDFDocument, rgb, degrees, LineCapStyle, StandardFonts } = PDFLib;
 const NS = 'http://www.w3.org/2000/svg';
-const PALETTE = ['#2563eb', '#7c3aed', '#facc15', '#16a34a', '#dc2626', '#111827'];
+const PALETTE = ['#7c3aed', '#facc15', '#16a34a', '#dc2626', '#795548', '#111827']; // no blue: annotation colours stay neutral and warm
 const DEFAULT_PAGE = [595.28, 841.89]; // A4
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 4;

@@ -896,3 +896,14 @@ html, body, #ribbon-tabs, #toolbar, #toolbar .panel, #tabs, #thumbs, #sidebar, #
 #toolbar .panel[data-panel="home"] button.ico:hover:not(:disabled) { background: #d0d0d0 !important; }
 #toolbar .panel[data-panel="home"] button.ico:active:not(:disabled), #toolbar .panel[data-panel="home"] button.ico[aria-pressed="true"] { background: #a8a8a8 !important; }
 #toolbar .panel[data-panel="home"] .sep { border-left-color: #808080; border-right-color: #fff; }
+
+/* v2026.11.23: the Tabbed Word palette: beige bars and tabs (#D4D0C8), grey work area (#9C9A95), no blue in the annotation tools */
+:root { --w97-face: #d4d0c8; }
+html, body, #ribbon-tabs, #toolbar, #toolbar .panel, #tabs, #thumbs, #sidebar, #statusbar, .menu-pop, .doc-tab, .doc-tab.active {
+  background-color: #d4d0c8 !important;
+}
+#viewer, #main, .empty { background-color: #9c9a95 !important; }
+#toolbar .panel[data-panel="home"] button.ico:hover:not(:disabled) { background: #e4e0d8 !important; }
+#toolbar .panel[data-panel="home"] button.ico:active:not(:disabled), #toolbar .panel[data-panel="home"] button.ico[aria-pressed="true"] { background: #bfbbb3 !important; }
+#toolbar button.tool.selected, #toolbar button.symbol.selected, #toolbar button.ico.selected { background: #bfbbb3 !important; border-color: #404040 #fff #fff #404040 !important; }
+#toolbar button.swatch.selected { border-color: #1f2937 !important; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1f2937 !important; }
