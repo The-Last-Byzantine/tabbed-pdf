@@ -477,7 +477,7 @@ dialog .fine { font-size: 12px; }
 /* v0.3: red theme of the Tabbed family. Wine band (header, status line and ribbon tabs), light command bar,
    rose-grey around the pages. Same pattern as Tabbed Word (navy) and Tabbed Slides (orange). */
 :root { --on-band: #f7d4d4; }
-#appstate { background: var(--header); color: var(--on-band); border-bottom: 0; padding-top: 0; }
+#appstate { background: var(--w97-grad); color: #fff; border-bottom: 0; padding-top: 0; }
 #ribbon-tabs { background: var(--header); border-bottom: 0; }
 #ribbon-tabs button { color: var(--on-band); border-bottom: 0; border-radius: 6px 6px 0 0; }
 #ribbon-tabs button:hover { color: #fff; background: rgba(255, 255, 255, .1); }

@@ -104,6 +104,7 @@ function newTab({ name, handle = null, dirty = false }) {
     handle,
     dirty,
     sources: new Map(), // srcId -> { bytes, pdf }
+    meta: {}, // document properties: title, author, subject (written on save)
     pages: [],
     undo: [],
     redo: [],
@@ -680,6 +681,49 @@ async function addPageNumbers(tab) {
   }
   renderAll(tab);
   toast(`Numbered ${chosen.length} page${chosen.length === 1 ? '' : 's'}`);
+}
+
+// Header and footer text: ordinary text items, applied to the selected pages (or all pages).
+// Header is centred at the top; footer is set at the bottom left, so it does not clash with page numbers.
+async function addHeaderFooter(tab) {
+  if (!tab || !tab.pages.length) return toast('Open a document first', true);
+  const top = window.prompt('Header text (centred at the top). Leave empty for none:', '');
+  if (top === null) return;
+  const bottom = window.prompt('Footer text (bottom left). Leave empty for none:', '');
+  if (bottom === null) return;
+  if (!top.trim() && !bottom.trim()) return;
+  const chosen = tab.selPages.size ? tab.pages.filter((p) => tab.selPages.has(p.uid)) : tab.pages;
+  const fs = 9;
+  pushUndo(tab);
+  for (const pg of chosen) {
+    const info = await pageInfo(tab, pg);
+    if (top.trim()) {
+      const w = top.length * fs * 0.55;
+      pg.items.push({ uid: uid(), type: 'text', x: info.Wd / 2 - w / 2, y: 18, w, h: fs * 1.4, text: top.trim(), color: '#000000', fs });
+    }
+    if (bottom.trim()) {
+      pg.items.push({ uid: uid(), type: 'text', x: 36, y: info.Hd - 30, w: bottom.length * fs * 0.55, h: fs * 1.4, text: bottom.trim(), color: '#000000', fs });
+    }
+  }
+  renderAll(tab);
+  toast(`Added header and footer to ${chosen.length} page${chosen.length === 1 ? '' : 's'}`);
+}
+
+// Document properties: title, author and subject are written into the saved file.
+function editDocumentProperties(tab) {
+  if (!tab) return toast('Open a document first', true);
+  const m = tab.meta || {};
+  const title = window.prompt('Title:', m.title || tab.name.replace(/\.pdf$/i, ''));
+  if (title === null) return;
+  const author = window.prompt('Author:', m.author || '');
+  if (author === null) return;
+  const subject = window.prompt('Subject:', m.subject || '');
+  if (subject === null) return;
+  pushUndo(tab);
+  tab.meta = { title: title.trim(), author: author.trim(), subject: subject.trim() };
+  tab.dirty = true;
+  renderStatus(tab);
+  toast('Document properties updated');
 }
 
 // Images become new pages. Each image is fitted, centred, on an A4 page in its own orientation.
@@ -1335,6 +1379,10 @@ async function buildPdf(tab, pages) {
       }
     }
   }
+  const meta = tab.meta || {};
+  if (meta.title) out.setTitle(meta.title);
+  if (meta.author) out.setAuthor(meta.author);
+  if (meta.subject) out.setSubject(meta.subject);
   return out.save();
 }
 
@@ -1892,6 +1940,8 @@ const COMMANDS = {
   'split-pages': () => splitIntoPages(tabOf()),
   'save-separate': () => { const t = tabOf(); if (t) splitIntoPages(t, selectedPageUids(t)); },
   'page-numbers': () => addPageNumbers(tabOf()),
+  'header-footer': () => addHeaderFooter(tabOf()),
+  'doc-properties': () => editDocumentProperties(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),
   portrait: () => orientSelected(tabOf(), 'portrait'),
