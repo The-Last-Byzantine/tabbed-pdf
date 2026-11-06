@@ -887,3 +887,12 @@ body { font-family: Tahoma, "MS Sans Serif", Arial, sans-serif; }
 :root[data-theme="dark"] #toolbar { background: #3a3633 !important; }
 :root[data-theme="dark"] #toolbar .panel[data-panel="home"] button.ico { color: #f3f4f6 !important; }
 :root[data-theme="dark"] #toolbar .panel[data-panel="home"] button.ico svg { color: #f3f4f6 !important; stroke: #f3f4f6 !important; }
+
+/* v2026.11.22: one colour for all the chrome in light mode: menu bar, standard bar, document tabs, page list, work area and status bar */
+:root { --w97-face: #c0c0c0; }
+html, body, #ribbon-tabs, #toolbar, #toolbar .panel, #tabs, #thumbs, #sidebar, #viewer, #main, #statusbar, .menu-pop, .empty, .doc-tab, .doc-tab.active {
+  background-color: #c0c0c0 !important;
+}
+#toolbar .panel[data-panel="home"] button.ico:hover:not(:disabled) { background: #d0d0d0 !important; }
+#toolbar .panel[data-panel="home"] button.ico:active:not(:disabled), #toolbar .panel[data-panel="home"] button.ico[aria-pressed="true"] { background: #a8a8a8 !important; }
+#toolbar .panel[data-panel="home"] .sep { border-left-color: #808080; border-right-color: #fff; }
