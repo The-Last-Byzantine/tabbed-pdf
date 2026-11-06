@@ -515,7 +515,7 @@ dialog .about a, form.about a { color: var(--accent); }
 :root[data-theme="dark"] .thumb:hover { background: #3a1111; }
 :root[data-theme="dark"] .thumb.sel { background: #4a1414; }
 :root[data-theme="dark"] #stat-dirty { color: var(--o300); }
-:root[data-theme="dark"] dialog { background: #2a0c0c; color: var(--ink); }
+:root[data-theme="dark"] dialog { background: #2E2A27; color: var(--ink); }
 :root[data-theme="dark"] .empty-actions button:not(.primary) { background: #3a1111; border-color: #5a1717; color: var(--ink); }
 
 /* v0.3.5: Word 97 pattern, in the Tabbed PDF red. Title bar gradient, grey command face, grey desk,
