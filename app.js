@@ -2458,6 +2458,7 @@ function buildSwatches() {
     b.type = 'button';
     b.dataset.color = c;
     b.style.background = c;
+    b.style.setProperty('--swatch', c);
     b.setAttribute('aria-label', `Colour ${c}`);
     b.title = c;
     b.addEventListener('click', () => {
@@ -2556,6 +2557,8 @@ const COMMANDS = {
   compare: () => comparePdfs(tabOf()),
   ocr: () => runOcr(tabOf()),
   'sign-cert': () => signWithCertificate(tabOf()),
+  about: () => { const d = $('#aboutdlg'); if (d && !d.open) d.showModal(); },
+  shortcuts: () => { const d = $('#shortcutsdlg'); if (d && !d.open) d.showModal(); },
   'clear-bookmarks': () => clearBookmarks(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),

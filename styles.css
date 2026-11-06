@@ -660,3 +660,40 @@ button.primary:hover, .primary:hover { background: #c2410c !important; }
 .cmp-text { font-size: 13px; line-height: 1.5; white-space: pre-wrap; margin: 0; }
 .cmp-del { color: #b91c1c; text-decoration: line-through; }
 .cmp-ins { color: #15803d; text-decoration: underline; }
+
+/* v2026.11.12: selected annotation tools and colours use Tabbed Word's light blue, not orange.
+   The status bar items show an underline and a hover edge, so they read as buttons. */
+#toolbar button.tool.selected, #toolbar button.symbol.selected {
+  background: #dbe7fb !important;
+  border-color: #2563eb !important;
+  box-shadow: none !important;
+  color: inherit !important;
+}
+/* a colour swatch keeps its own colour; the selected one gets a blue ring */
+#toolbar button.swatch.selected {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb !important;
+}
+:root[data-theme="dark"] #toolbar button.tool.selected, :root[data-theme="dark"] #toolbar button.symbol.selected {
+  background: #1e3a5f !important;
+  border-color: #60a5fa !important;
+}
+/* Tabbed Word's blue for the selected page, thumbnail and drop target; labels in neutral grey */
+.thumb.sel { border-color: #2563eb !important; background: #dbe7fb !important; }
+.page.current { outline-color: #2563eb !important; }
+#viewer.drop-target { outline-color: #2563eb !important; }
+.label { color: #3f4650; }
+:root[data-theme="dark"] .label { color: #c9ced6; }
+#statusbar .sb-btn {
+  text-decoration: underline dotted #7c90aa;
+  text-underline-offset: 3px;
+  border: 1px solid transparent;
+}
+#statusbar .sb-btn:hover { border-color: #9ca3af; background: #d6d3cc; }
+/* the selected colour swatch keeps its own colour (the selected rule above would paint it orange) */
+#toolbar button.swatch.selected { background: var(--swatch) !important; }
+/* Tabbed Word's blue for the current thumbnail, the open document tab and the active ribbon tab */
+.thumb.current .thumb-canvas-wrap { box-shadow: 0 0 0 1px #2563eb !important; }
+.thumb:hover { background: #eef4fd !important; }
+.doc-tab.active { border-color: #2563eb !important; }
+#ribbon-tabs button.selected { box-shadow: inset 0 3px 0 #2563eb !important; }
