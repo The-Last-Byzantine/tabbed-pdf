@@ -336,10 +336,27 @@ async function layoutPages(tab) {
   return true;
 }
 
+// Crop margins (points, in the page's displayed orientation). The page keeps its full content;
+// the visible area is shrunk and the content shifted, so items keep their coordinates.
+function cropOf(pg) {
+  const c = pg.crop || {};
+  return { l: c.l || 0, t: c.t || 0, r: c.r || 0, b: c.b || 0 };
+}
+
 function applyPageSize(view) {
   const z = state.zoom;
-  view.el.style.width = view.info.Wd * z + 'px';
-  view.el.style.height = view.info.Hd * z + 'px';
+  const { Wd: W, Hd: H } = view.info;
+  const c = cropOf(view.pg);
+  const cw = W - c.l - c.r, ch = H - c.t - c.b;
+  view.el.style.width = cw * z + 'px';
+  view.el.style.height = ch * z + 'px';
+  view.el._crop = { l: c.l, t: c.t };
+  view.canvas.style.left = -c.l * z + 'px';
+  view.canvas.style.top = -c.t * z + 'px';
+  view.canvas.style.width = W * z + 'px';
+  view.canvas.style.height = H * z + 'px';
+  view.canvas.style.inset = 'auto';
+  view.svg.setAttribute('viewBox', `${c.l} ${c.t} ${cw} ${ch}`);
 }
 
 async function renderCanvas(tab, view) {
@@ -374,7 +391,11 @@ function renderOverlay(tab, view) {
   const sel = tab.selItem && tab.selItem.pageUid === pg.uid ? tab.selItem.itemUid : null;
   for (const item of pg.items) {
     if (item.type === 'text') {
-      pageEl.append(makeTextEl(tab, item, z, sel === item.uid));
+      const d = makeTextEl(tab, item, z, sel === item.uid);
+      const c = cropOf(pg);
+      d.style.left = (item.x - c.l) * z + 'px';
+      d.style.top = (item.y - c.t) * z + 'px';
+      pageEl.append(d);
       continue;
     }
     svg.append(makeSvgItem(item, z));
@@ -727,6 +748,32 @@ function editDocumentProperties(tab) {
   toast('Document properties updated');
 }
 
+// Crop the selected pages (or all pages) by margins in points: left, top, right, bottom.
+function cropPages(tab) {
+  if (!tab || !tab.pages.length) return toast('Open a document first', true);
+  const v = window.prompt('Crop margins in points, as left, top, right, bottom (for example 36, 36, 36, 36):', '0, 0, 0, 0');
+  if (v === null) return;
+  const nums = v.split(/[ ,]+/).filter(Boolean).map(Number);
+  if (nums.length !== 4 || nums.some((n) => !Number.isFinite(n) || n < 0)) return toast('Type four numbers, zero or more', true);
+  const [l, t, r, b] = nums;
+  const chosen = tab.selPages.size ? tab.pages.filter((p) => tab.selPages.has(p.uid)) : tab.pages;
+  pushUndo(tab);
+  for (const pg of chosen) pg.crop = { l, t, r, b };
+  tab.dirty = true;
+  renderAll(tab);
+  toast(`Cropped ${chosen.length} page${chosen.length === 1 ? '' : 's'}`);
+}
+
+function clearCrop(tab) {
+  if (!tab || !tab.pages.length) return toast('Open a document first', true);
+  const chosen = tab.selPages.size ? tab.pages.filter((p) => tab.selPages.has(p.uid)) : tab.pages;
+  pushUndo(tab);
+  for (const pg of chosen) delete pg.crop;
+  tab.dirty = true;
+  renderAll(tab);
+  toast('Crop removed');
+}
+
 // Bookmark the current page (or rename it if it already has one).
 function bookmarkCurrentPage(tab) {
   if (!tab || !tab.pages.length) return toast('Open a document first', true);
@@ -1058,7 +1105,8 @@ function setItemProp(tab, key, value) {
 // ---------- pointer interaction ----------
 function localPoint(e, pageEl) {
   const rect = pageEl.getBoundingClientRect();
-  return { u: (e.clientX - rect.left) / state.zoom, v: (e.clientY - rect.top) / state.zoom };
+  const c = pageEl._crop || { l: 0, t: 0 };
+  return { u: (e.clientX - rect.left) / state.zoom + c.l, v: (e.clientY - rect.top) / state.zoom + c.t };
 }
 
 function onPointerDown(e) {
@@ -1429,6 +1477,13 @@ async function buildPdf(tab, pages) {
       const [a, b] = toBase(u, v, R, Wb, Hb);
       return { x: ox + a, y: oy + Hb - b };
     };
+
+    const cr = cropOf(pg);
+    if (cr.l || cr.t || cr.r || cr.b) {
+      const { Wd, Hd } = info;
+      const a = P(cr.l, cr.t), b2 = P(Wd - cr.r, Hd - cr.b);
+      page.setCropBox(Math.min(a.x, b2.x), Math.min(a.y, b2.y), Math.abs(b2.x - a.x), Math.abs(b2.y - a.y));
+    }
 
     for (const item of pg.items) {
       try {
@@ -2003,6 +2058,8 @@ const COMMANDS = {
   'header-footer': () => addHeaderFooter(tabOf()),
   'doc-properties': () => editDocumentProperties(tabOf()),
   'bookmark-page': () => bookmarkCurrentPage(tabOf()),
+  'crop-pages': () => cropPages(tabOf()),
+  'clear-crop': () => clearCrop(tabOf()),
   'clear-bookmarks': () => clearBookmarks(tabOf()),
   'rotate-left': () => rotateSelected(tabOf(), -90),
   'rotate-right': () => rotateSelected(tabOf(), 90),
