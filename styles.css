@@ -697,3 +697,43 @@ button.primary:hover, .primary:hover { background: #c2410c !important; }
 .thumb:hover { background: #eef4fd !important; }
 .doc-tab.active { border-color: #2563eb !important; }
 #ribbon-tabs button.selected { box-shadow: inset 0 3px 0 #2563eb !important; }
+
+/* v2026.11.13: menu bar and narrow tools bar, as in Tabbed Word. The menus replace the tabs; the commands are the same. */
+#ribbon-tabs {
+  display: flex; align-items: stretch; height: 24px; padding: 0 4px; gap: 0;
+  background: #e6eef7; border-bottom: 1px solid #c3d1e3;
+  position: sticky; top: 0; z-index: 41; overflow-x: auto; scrollbar-width: none;
+}
+#ribbon-tabs::-webkit-scrollbar { display: none; }
+#ribbon-tabs button {
+  display: inline-flex; align-items: center; margin: 0; padding: 0 9px;
+  border: 1px solid transparent; border-radius: 0; background: none; box-shadow: none;
+  color: #1f2834; font: 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif; white-space: nowrap; cursor: default;
+}
+#ribbon-tabs button svg { display: none; }
+#ribbon-tabs button:hover, #ribbon-tabs button[aria-expanded="true"] { background: #fff; border-color: #9fb6d1; color: #1e3a5f; }
+#ribbon-tabs button.selected { color: #1e3a5f; font-weight: 600; box-shadow: none; }
+#ribbon-tabs #aboutbtn { display: none; }
+#toolbar {
+  position: sticky !important; top: 24px !important; z-index: 40 !important;
+  padding: 3px 6px !important; min-height: 0; gap: 4px;
+}
+#toolbar button, #toolbar select { padding: 2px 8px; font-size: 12px; }
+#toolbar .tool-group { gap: 3px; }
+
+.menu-pop {
+  position: fixed; z-index: 80; min-width: 230px; padding: 3px 0;
+  background: #fff; border: 1px solid #9fb6d1; box-shadow: 0 8px 22px rgba(30, 58, 95, .18);
+  font: 13px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; color: #1f2834;
+}
+.menu-pop button {
+  display: flex; justify-content: space-between; align-items: center; gap: 26px;
+  width: 100%; margin: 0; padding: 5px 14px 5px 26px; border: 0; border-radius: 0; background: none; box-shadow: none;
+  text-align: left; font: inherit; color: inherit; cursor: default; white-space: nowrap; position: relative;
+}
+.menu-pop button:hover:not(:disabled) { background: #1e3a5f; color: #fff; }
+.menu-pop button:disabled { color: #a7b2c1; }
+.menu-pop button .k { color: #6a7a8f; font-size: 12px; }
+.menu-pop button:hover:not(:disabled) .k { color: #cfe0f7; }
+.menu-pop button.checked::before { content: "\2713"; position: absolute; left: 8px; top: 4px; font-weight: 700; }
+.menu-pop hr { border: 0; height: 1px; margin: 3px 6px; background: #d6e0ec; }

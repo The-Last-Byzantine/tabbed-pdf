@@ -13,7 +13,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.mjs';
 
 const { PDFDocument, rgb, degrees, LineCapStyle, StandardFonts } = PDFLib;
 const NS = 'http://www.w3.org/2000/svg';
-const PALETTE = ['#2563eb', '#ea580c', '#facc15', '#16a34a', '#dc2626', '#111827'];
+const PALETTE = ['#2563eb', '#7c3aed', '#facc15', '#16a34a', '#dc2626', '#111827'];
 const DEFAULT_PAGE = [595.28, 841.89]; // A4
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 4;
@@ -2407,6 +2407,56 @@ function showPanel(name) {
   for (const p of $$('#toolbar .panel')) p.classList.toggle('selected', p.dataset.panel === name);
 }
 
+// ---------- menus (Tabbed Word style): each menu opens a dropdown of its commands,
+// and the narrow tools bar below shows the same group. The commands are the existing buttons.
+let openMenuState = null;
+
+function closeMenu() {
+  if (!openMenuState) return;
+  openMenuState.btn.setAttribute('aria-expanded', 'false');
+  openMenuState.pop.remove();
+  openMenuState = null;
+}
+
+function openMenuFor(btn) {
+  if (openMenuState && openMenuState.btn === btn) return closeMenu();
+  closeMenu();
+  const name = btn.dataset.panel;
+  showPanel(name);
+  const panel = document.querySelector(`#toolbar .panel[data-panel="${name}"]`);
+  if (!panel) return;
+  const pop = document.createElement('div');
+  pop.className = 'menu-pop';
+  pop.setAttribute('role', 'menu');
+  const nodes = [];
+  for (const child of panel.children) {
+    if (child.classList.contains('tool-group')) nodes.push(...child.children); else nodes.push(child);
+  }
+  for (const node of nodes) {
+    if (node.classList.contains('sep')) { pop.append(document.createElement('hr')); continue; }
+    if (node.tagName !== 'BUTTON' || node.hidden) continue;
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.setAttribute('role', 'menuitem');
+    const text = (node.textContent || '').replace(/\s+/g, ' ').trim();
+    const title = (node.title || '').trim();
+    const keyMatch = title.match(/\(([^)]*)\)\s*$/);
+    let label = text || title.replace(/\s*\([^)]*\)\s*$/, '').replace(/:.*$/, '').trim();
+    item.append(document.createTextNode(label));
+    if (keyMatch) { const k = document.createElement('span'); k.className = 'k'; k.textContent = keyMatch[1]; item.append(k); }
+    if (node.disabled) item.disabled = true;
+    if (node.getAttribute('aria-pressed') === 'true' || node.classList.contains('selected')) item.classList.add('checked');
+    item.addEventListener('click', () => { closeMenu(); node.click(); });
+    pop.append(item);
+  }
+  const r = btn.getBoundingClientRect();
+  pop.style.left = `${Math.round(r.left)}px`;
+  pop.style.top = `${Math.round(r.bottom)}px`;
+  document.body.append(pop);
+  btn.setAttribute('aria-expanded', 'true');
+  openMenuState = { btn, pop };
+}
+
 // Show a ribbon panel even when the ribbon is collapsed.
 function openRibbon(name) {
   state.ribbonHidden = false;
@@ -2603,13 +2653,13 @@ function wire() {
   // Ribbon tabs
   // Collapsible ribbon: click the tab you are on to hide the commands; click any tab to show them again
   for (const b of $$('#ribbon-tabs [data-panel]')) {
-    b.addEventListener('click', () => {
-      const wasOn = b.classList.contains('selected');
-      if (state.ribbonHidden) openRibbon(b.dataset.panel);
-      else if (wasOn) { state.ribbonHidden = true; document.body.classList.add('ribbon-off'); }
-      else showPanel(b.dataset.panel);
-    });
+    b.addEventListener('click', () => openMenuFor(b));
   }
+  document.addEventListener('pointerdown', (e) => {
+    if (openMenuState && !openMenuState.pop.contains(e.target) && !openMenuState.btn.contains(e.target)) closeMenu();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && openMenuState) closeMenu(); });
+  window.addEventListener('resize', () => closeMenu());
 
   // Status bar: each item opens the control that changes it, as in Tabbed Word
   $('#stat-pages').addEventListener('click', () => openRibbon('pages'));
