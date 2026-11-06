@@ -749,3 +749,24 @@ button.primary:hover, .primary:hover { background: #c2410c !important; }
 /* v2026.11.15: every toolbar icon button is the same square, with the same icon size, so none is clipped */
 #toolbar .panel button.ico, #toolbar button.ico.narrow { width: 36px; min-width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
 #toolbar .panel button.ico svg { width: 20px; height: 20px; display: block; flex: 0 0 auto; }
+
+/* v2026.11.16: menu bar and menus use the same grey face as the toolbar, not light blue */
+#ribbon-tabs { background: var(--w97-face); border-bottom: 1px solid var(--w97-shadow); }
+#ribbon-tabs button { color: #1f2937; }
+#ribbon-tabs button:hover, #ribbon-tabs button[aria-expanded="true"] { background: var(--w97-face); border-color: var(--w97-light) var(--w97-dark) var(--w97-dark) var(--w97-light); color: #1f2937; }
+#ribbon-tabs button.selected { color: #1f2937; font-weight: 600; box-shadow: none; }
+.menu-pop { background: var(--w97-face); border: 1px solid var(--w97-dark); box-shadow: 2px 2px 0 rgba(0, 0, 0, .25); }
+.menu-pop button { color: #1f2937; }
+.menu-pop button:hover:not(:disabled) { background: #0A246A; color: #fff; }
+.menu-pop button:disabled { color: #8a857d; }
+.menu-pop button .k { color: #4b4a47; }
+.menu-pop button:hover:not(:disabled) .k { color: #cfd8ea; }
+.menu-pop hr { border: 0; border-top: 1px solid var(--w97-shadow); }
+:root[data-theme="dark"] #ribbon-tabs { background: #2E2A27; }
+:root[data-theme="dark"] .menu-pop { background: #2E2A27; border-color: #5C544D; }
+:root[data-theme="dark"] .menu-pop button, :root[data-theme="dark"] #ribbon-tabs button { color: #f3f4f6; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) #ribbon-tabs { background: #2E2A27; }
+  :root:not([data-theme="light"]) .menu-pop { background: #2E2A27; border-color: #5C544D; }
+  :root:not([data-theme="light"]) .menu-pop button, :root:not([data-theme="light"]) #ribbon-tabs button { color: #f3f4f6; }
+}
