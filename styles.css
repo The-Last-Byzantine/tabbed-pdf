@@ -1,26 +1,26 @@
 /* Tabbed PDF: Tabbed Word's layout, red palette (v0.3; the --o* names are kept from the orange version).
-   Red scale: 50 #fef2f2 · 100 #fee2e2 · 200 #fecaca · 300 #fca5a5 · 400 #f87171
-                 500 #ef4444 · 600 #dc2626 · 700 #b91c1c · 800 #991b1b · 900 #7f1d1d · 950 #450a0a */
+   Red scale: 50 #F2F6FC · 100 #E6EEF9 · 200 #C1D2EE · 300 #A6CAF0 · 400 #8AB4E8
+                 500 #5B8DD6 · 600 #3A6EA5 · 700 #316AC5 · 800 #1A3F9A · 900 #0A246A · 950 #061538 */
 :root {
-  --o50: #fef2f2;
-  --o100: #fee2e2;
-  --o200: #fecaca;
-  --o300: #fca5a5;
-  --o400: #f87171;
-  --o500: #ef4444;
-  --o600: #dc2626;
-  --o700: #b91c1c;
-  --o800: #991b1b;
-  --o900: #7f1d1d;
-  --o950: #450a0a;
+  --o50: #F2F6FC;
+  --o100: #E6EEF9;
+  --o200: #C1D2EE;
+  --o300: #A6CAF0;
+  --o400: #8AB4E8;
+  --o500: #5B8DD6;
+  --o600: #3A6EA5;
+  --o700: #316AC5;
+  --o800: #1A3F9A;
+  --o900: #0A246A;
+  --o950: #061538;
 
-  --bg: #fef2f2;
-  --ink: #450a0a;
+  --bg: #F2F6FC;
+  --ink: #061538;
   --muted: #7a4b4b;
   --ribbon: #fff6f6;
   --ribbon-border: #ecd2d2;
   --viewer-bg: #ede4e4;
-  --header: #7f1d1d;
+  --header: #0A246A;
   --accent: var(--o700);
   --accent-hover: var(--o800);
   --focus: var(--o500);
@@ -29,24 +29,24 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #1c0808;
-    --ink: #fee2e2;
+    --ink: #E6EEF9;
     --muted: #d68484;
     --ribbon: #2E2A27;
     --ribbon-border: #5C544D;
     --viewer-bg: #2b0f0f;
-    --header: #450a0a;
+    --header: #061538;
     --accent: var(--o500);
     --accent-hover: var(--o400);
   }
 }
 :root[data-theme="dark"] {
   --bg: #1c0808;
-  --ink: #fee2e2;
+  --ink: #E6EEF9;
   --muted: #d68484;
   --ribbon: #2E2A27;
   --ribbon-border: #5C544D;
   --viewer-bg: #2b0f0f;
-  --header: #450a0a;
+  --header: #061538;
   --accent: var(--o500);
   --accent-hover: var(--o400);
 }
@@ -466,9 +466,9 @@ body.ribbon-off #toolbar { display: none; }
 #toolbar button.ic { width: 38px; min-width: 38px; height: 38px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 #toolbar button.ic svg { width: 21px; height: 21px; display: block; }
 #toolbar button.ic.primary { width: 38px; }
-#statusbar { position: sticky; bottom: 0; z-index: 10; background: var(--header); color: #ffdcdc; border-top: 0; }
+#statusbar { position: sticky; bottom: 0; z-index: 10; background: var(--header); color: #D6E4F5; border-top: 0; }
 #statusbar .ver { margin-left: auto; color: #f7cfcf; }
-#stat-dirty { color: #fecaca; }
+#stat-dirty { color: #C1D2EE; }
 dialog.about-dialog { width: min(600px, 94vw); }
 dialog table.shortcuts { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0 12px; }
 dialog table.shortcuts th, dialog table.shortcuts td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--o100); vertical-align: top; }
@@ -537,8 +537,8 @@ dialog .about a, form.about a { color: var(--accent); }
   --ribbon: var(--w97-face);
   --ribbon-border: var(--w97-shadow);
   --viewer-bg: var(--w97-desk);
-  --header: #6B0F0F;
-  --accent: #7F1D1D;
+  --header: #0D2F7A;
+  --accent: #0A246A;
   --accent-hover: #B3262B;
   --focus: #3B6FD0;
 }
@@ -546,19 +546,19 @@ dialog .about a, form.about a { color: var(--accent); }
   :root:not([data-theme="light"]) {
     --bg: #2E2A27; --ink: #F4F1EA; --muted: #C9B8B8;
     --ribbon: #3A3530; --ribbon-border: #1A1816;
-    --viewer-bg: #222020; --header: #4A0C0C;
+    --viewer-bg: #222020; --header: #061538;
     --w97-face: #3A3530; --w97-status: #2E2A27;
     --w97-grad: linear-gradient(90deg, #0A246A, #3A5A8A);
-    --accent: #F2B8B8; --accent-hover: #FFD6D6;
+    --accent: #B8CEEE; --accent-hover: #D6E4F5;
   }
 }
 :root[data-theme="dark"] {
   --bg: #2E2A27; --ink: #F4F1EA; --muted: #C9B8B8;
   --ribbon: #3A3530; --ribbon-border: #1A1816;
-  --viewer-bg: #222020; --header: #4A0C0C;
+  --viewer-bg: #222020; --header: #061538;
   --w97-face: #3A3530; --w97-status: #2E2A27;
   --w97-grad: linear-gradient(90deg, #0A246A, #3A5A8A);
-  --accent: #F2B8B8; --accent-hover: #FFD6D6;
+  --accent: #B8CEEE; --accent-hover: #D6E4F5;
 }
 
 html, body { background: var(--w97-desk); }
@@ -658,7 +658,7 @@ button.primary:hover, .primary:hover { background: #1e3a8a !important; }
 #cmpbody { max-height: 56vh; overflow: auto; }
 #cmpbody h3 { font-size: 13px; margin: 10px 0 4px; }
 .cmp-text { font-size: 13px; line-height: 1.5; white-space: pre-wrap; margin: 0; }
-.cmp-del { color: #b91c1c; text-decoration: line-through; }
+.cmp-del { color: #316AC5; text-decoration: line-through; }
 .cmp-ins { color: #15803d; text-decoration: underline; }
 
 /* v2026.11.12: selected annotation tools and colours use Tabbed Word's light blue, not orange.
@@ -897,7 +897,7 @@ html, body, #ribbon-tabs, #toolbar, #toolbar .panel, #tabs, #thumbs, #sidebar, #
 #toolbar .panel[data-panel="home"] button.ico:active:not(:disabled), #toolbar .panel[data-panel="home"] button.ico[aria-pressed="true"] { background: #a8a8a8 !important; }
 #toolbar .panel[data-panel="home"] .sep { border-left-color: #808080; border-right-color: #fff; }
 
-/* v2026.11.23: the Tabbed Word palette: beige bars and tabs (#D4D0C8), grey work area (#9C9A95), no blue in the annotation tools */
+/* v2026.11.24: the Tabbed Word palette: beige bars and tabs (#D4D0C8), grey work area (#9C9A95), no blue in the annotation tools */
 :root { --w97-face: #d4d0c8; }
 html, body, #ribbon-tabs, #toolbar, #toolbar .panel, #tabs, #thumbs, #sidebar, #statusbar, .menu-pop, .doc-tab, .doc-tab.active {
   background-color: #d4d0c8 !important;

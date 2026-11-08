@@ -13,7 +13,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.mjs';
 
 const { PDFDocument, rgb, degrees, LineCapStyle, StandardFonts } = PDFLib;
 const NS = 'http://www.w3.org/2000/svg';
-const PALETTE = ['#7c3aed', '#facc15', '#16a34a', '#dc2626', '#795548', '#111827']; // no blue: annotation colours stay neutral and warm
+const PALETTE = ['#7c3aed', '#facc15', '#16a34a', '#3A6EA5', '#795548', '#111827']; // no blue: annotation colours stay neutral and warm
 const DEFAULT_PAGE = [595.28, 841.89]; // A4
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 4;
@@ -90,6 +90,7 @@ const state = {
   zoom: 1.25,
   ribbonHidden: false, // ribbon collapsed by clicking the active tab
   thumbsOpen: true,
+  leftPane: 'pages',
   gesture: null,
   io: null,
   thumbIo: null,
@@ -626,6 +627,7 @@ async function activate(tab) {
   if (!ok) return;
   renderThumbs(tab);
   renderStatus(tab);
+  if (state.leftPane === 'comments') renderComments(tab);
   const viewer = viewerEl();
   viewer.scrollTop = tab.scrollTop || 0;
   scheduleViewportCheck();
@@ -672,6 +674,7 @@ async function openBytes(name, bytes, handle = null, link = null) {
   if (!tab.pages.length) return toast('That PDF has no pages.', true);
   addTab(tab);
   toast(link ? `Opened ${name} from Tabbed Folders · Save writes it back there` : `Opened ${name}`);
+  return tab;
 }
 
 async function newBlankDocument() {
@@ -1067,6 +1070,8 @@ function dropPages(tab, uids, dropIndex) {
 // ---------- rendering orchestration ----------
 async function renderAll(tab) {
   if (tab !== state.active) return;
+  touchDrive();
+  if (state.leftPane === 'comments') renderComments(tab);
   const keepScroll = viewerEl().scrollTop;
   const ok = await layoutPages(tab);
   if (!ok) return;
@@ -2648,7 +2653,125 @@ const COMMANDS = {
   'zoom-100': () => setZoom(1),
   'zoom-fit': () => fitWidth(),
   'toggle-thumbs': () => toggleThumbs(),
+  'pane-pages': () => toggleThumbs(),
+  'pane-folders': () => showLeftPane('folders'),
+  'pane-comments': () => showLeftPane('comments'),
 };
+
+// ---------- Drive, Folders and Comments (2026.11.24) ----------
+function touchDrive() { if (window.TabbedDrive) TabbedDrive.touch(); }
+
+function showLeftPane(name) {
+  state.leftPane = name;
+  state.thumbsOpen = true;
+  $('#thumbs').classList.remove('hidden');
+  $('#thumblist').hidden = name !== 'pages';
+  $('#folderlist').hidden = name !== 'folders';
+  $('#commentlist').hidden = name !== 'comments';
+  for (const b of $$('#lptabs button')) {
+    const on = b.dataset.pane === name;
+    b.classList.toggle('selected', on);
+    b.setAttribute('aria-selected', String(on));
+  }
+  if (name === 'folders' && window.TabbedFolders) TabbedFolders.show();
+  if (name === 'comments') renderComments(state.active);
+  if (window.TabbedOffice) TabbedOffice.syncPressed();
+}
+
+function goToPage(tab, uid) {
+  const pageEl = document.querySelector(`#pages .page[data-uid="${uid}"]`);
+  if (pageEl) pageEl.scrollIntoView({ block: 'start' });
+}
+
+function commentRow(tab, pg, it, index) {
+  const li = el('li', 'cm-item');
+  li.append(el('div', 'cm-meta', `Page ${index + 1}`));
+  li.append(el('div', 'cm-text', it.text));
+  const row = el('div', 'cm-actions');
+  const go = el('button', '', 'Go to page');
+  go.type = 'button';
+  go.addEventListener('click', () => goToPage(tab, pg.uid));
+  const edit = el('button', '', 'Edit');
+  edit.type = 'button';
+  edit.addEventListener('click', () => {
+    const text = window.prompt('Comment text:', it.text);
+    if (text === null || !text.trim()) return;
+    pushUndo(tab);
+    it.text = text.trim();
+    tab.dirty = true;
+    renderAll(tab);
+    renderComments(tab);
+  });
+  const del = el('button', '', 'Delete');
+  del.type = 'button';
+  del.addEventListener('click', () => {
+    pushUndo(tab);
+    pg.items = pg.items.filter((x) => x !== it);
+    tab.dirty = true;
+    renderAll(tab);
+    renderComments(tab);
+  });
+  row.append(go, edit, del);
+  li.append(row);
+  return li;
+}
+
+// Text comments that are already in the PDF file (read only), cached per page
+async function fileCommentsOf(tab) {
+  if (!tab.fileCache) tab.fileCache = new Map();
+  const out = [];
+  for (let i = 0; i < tab.pages.length; i++) {
+    const pg = tab.pages[i];
+    if (!pg.src) continue;
+    if (!tab.fileCache.has(pg.uid)) {
+      let found = [];
+      try {
+        const src = tab.sources.get(pg.src);
+        const page = await src.pdf.getPage(pg.index + 1);
+        const annots = await page.getAnnotations();
+        found = annots
+          .filter((a) => a.subtype === 'Text' && a.contents && a.contents.trim())
+          .map((a) => a.contents.trim());
+      } catch (e) {
+        found = [];
+      }
+      tab.fileCache.set(pg.uid, found);
+    }
+    for (const text of tab.fileCache.get(pg.uid)) out.push({ page: i + 1, uid: pg.uid, text });
+  }
+  return out;
+}
+
+async function renderComments(tab) {
+  const appList = $('#cm-app'), fileList = $('#cm-file'), note = $('#cm-note');
+  if (!appList) return;
+  appList.textContent = '';
+  fileList.textContent = '';
+  if (!tab) { note.textContent = 'Open a PDF to see its comments.'; return; }
+  const token = (tab.cmToken = (tab.cmToken || 0) + 1);
+  let n = 0;
+  tab.pages.forEach((pg, i) => pg.items.forEach((it) => {
+    if (it.type !== 'note') return;
+    n++;
+    appList.append(commentRow(tab, pg, it, i));
+  }));
+  note.textContent = n ? `${n} comment${n === 1 ? '' : 's'} added in this document.` : 'No comments added in this document yet.';
+  const fromFile = await fileCommentsOf(tab);
+  if (token !== tab.cmToken || state.active !== tab) return;
+  if (!fromFile.length) { fileList.append(el('li', 'cm-empty', 'None.')); return; }
+  for (const c of fromFile) {
+    const li = el('li', 'cm-item');
+    li.append(el('div', 'cm-meta', `Page ${c.page} · in the file`));
+    li.append(el('div', 'cm-text', c.text));
+    const row = el('div', 'cm-actions');
+    const go = el('button', '', 'Go to page');
+    go.type = 'button';
+    go.addEventListener('click', () => goToPage(tab, c.uid));
+    row.append(go);
+    li.append(row);
+    fileList.append(li);
+  }
+}
 
 function toggleThumbs() {
   state.thumbsOpen = !state.thumbsOpen;
@@ -2665,7 +2788,7 @@ function toast(message, isError = false) {
     document.body.append(note);
   }
   note.textContent = message;
-  note.style.background = isError ? '#991b1b' : '#0A246A';
+  note.style.background = isError ? '#061538' : '#0A246A';
   note.hidden = false;
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => { note.hidden = true; }, 3600);
@@ -2673,6 +2796,30 @@ function toast(message, isError = false) {
 
 // ---------- wiring ----------
 function wire() {
+  document.addEventListener('tabbedpdf:command', (e) => { const fn = COMMANDS[e.detail && e.detail.act]; if (fn) fn(); });
+  document.addEventListener('tabbedpdf:open', (e) => openBytes(e.detail.name, e.detail.bytes, e.detail.handle));
+  for (const b of $$('#lptabs button')) b.addEventListener('click', () => showLeftPane(b.dataset.pane));
+  const addComment = $('#cm-add');
+  if (addComment) addComment.addEventListener('click', () => {
+    const t = $('#toolbar button[data-tool="comment"]');
+    if (t) t.click();
+    toast('Click a page to add a comment.');
+  });
+  if (window.TabbedDrive) TabbedDrive.attach({
+    decks: () => state.tabs,
+    active: () => state.active,
+    formatOf: () => 'pdf',
+    fileName: (d) => (/\.pdf$/i.test(d.name) ? d.name : d.name + '.pdf'),
+    blob: async (d) => new Blob([await exportBytes(d)], { type: 'application/pdf' }),
+    openFile: (file, after) => {
+      file.arrayBuffer()
+        .then((buf) => openBytes(file.name, new Uint8Array(buf)))
+        .then((tab) => { if (tab) after(tab); });
+    },
+    sig: (d) => JSON.stringify({ pages: d.pages, meta: d.meta, bookmarks: d.bookmarks }),
+    save: () => renderTabs(),
+    status: (msg, isError) => toast(msg, isError),
+  });
   // Ribbon tabs
   // Collapsible ribbon: click the tab you are on to hide the commands; click any tab to show them again
   for (const b of $$('#ribbon-tabs [data-panel]')) {

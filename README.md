@@ -6,7 +6,7 @@ Also see our landing page and other apps: https://tabbedapps.pages.dev
 
 A browser-based PDF editor: open, create, save, annotate, sign, add symbols,
 rearrange pages, rotate them, and export. Same layout as Tabbed Word, in red.
-Everything runs on the device. Files are never uploaded.
+Everything runs on the device. Files stay on this device unless you save them to Google Drive (see below).
 
 ## Features
 
@@ -90,3 +90,25 @@ MIT. See `LICENSE`. Third-party components and their licences are listed in `thi
 The Last Byzantine.
 
 This project is not affiliated with or endorsed by Adobe or Microsoft. "PDF" is a trademark of Adobe.
+
+## Version 2026.11.24: Tabbed Word look, Google Drive, Folders, Comments, Email all
+
+- **Look**: the Tabbed Word layout in red: a menu bar (File, Edit, View, Insert, Pages, Tools, Help), a flat
+  toolbar with Word-style icons, the Office 2003 flat status bar and dialogs.
+- **Google Drive** (File › Open from / Save to Google Drive, or the toolbar buttons): the PDF is saved to
+  "your Drive" and kept in step after a short pause, with the same rules as Tabbed Word and Tabbed Slides:
+  the newer copy wins, and a Drive copy changed elsewhere is never overwritten silently.
+  Sign-in is Google's own; the browser talks to Google directly. Nothing passes through a Tabbed PDF server.
+- **Folders** (left pane, Folders tab): lists the PDF files in a folder on this computer. In Chromium
+  browsers, Save writes back to the open file; other browsers download a copy.
+- **Comments** (left pane, Comments tab): lists the comments added in the document, with Go to page, Edit and
+  Delete, and the text comments that are already in the file (read only).
+- **Email all open PDFs**: each open document is saved to Drive as a PDF, then Gmail opens for you to attach them.
+
+### Google setup (once)
+
+1. In the Google Cloud project that holds the OAuth client, enable the **Google Drive API**.
+2. Under Authorised JavaScript origins, add the address Tabbed PDF is served from (for example
+   `https://tabbedpdf.pages.dev`) and `http://localhost:8000` for local tests.
+3. While the consent screen is in Testing mode, add your Google account as a test user.
+

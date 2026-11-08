@@ -1,0 +1,192 @@
+/* Tabbed PDF 2026.11.24: the Tabbed Word look (flat Office-style chrome, bevelled buttons, menu bar,
+   dialogs, status bar) in the red palette. Loads after styles.css and overrides it. */
+:root:root {
+  color-scheme: light;
+  --o3-grad: linear-gradient(90deg, #0A246A, #A6CAF0);
+  --o3-face: #d4d0c8;
+  --o3-canvas: #9c9a95;
+  --o3-light: #fff;
+  --o3-shadow: #808080;
+  --o3-dark: #404040;
+  --o3-sel: #C1D2EE;
+  --o3-selb: #316AC5;
+  --o3-hover: #e9e7e2;
+  --o3-ui: Tahoma, Verdana, "Segoe UI", sans-serif;
+  --bg: #d4d0c8;
+  --ink: #000;
+  --muted: #404040;
+  --ribbon: #d4d0c8;
+  --ribbon-border: #808080;
+  --viewer-bg: #9c9a95;
+  --header: #0A246A;
+  --accent: #316AC5;
+  --accent-hover: #1A3F9A;
+  --focus: #5B8DD6;
+}
+[hidden] { display: none !important; }
+html, body { background: var(--o3-canvas) !important; font-family: var(--o3-ui); }
+
+/* Title bar: blue, as in Tabbed Word and Tabbed Slides */
+header { background: linear-gradient(90deg, #0A246A, #A6CAF0) !important; color: #fff !important; padding: 4px 8px !important; }
+header h1 { font: 700 15px/22px var(--o3-ui) !important; }
+header small { display: none; }
+#filename {
+  color: #fff !important; font: 13px var(--o3-ui) !important; text-shadow: 0 1px 1px #0A246A;
+  background: rgba(10, 36, 106, .6); padding: 1px 8px; max-width: 50% !important;
+}
+header > #filename { display: block !important; }
+#filename.dirty::after { color: #C1D2EE !important; }
+
+/* Menu bar (File, Edit, View, ...) */
+#officemenu {
+  display: flex; position: relative; z-index: 200;
+  background: var(--o3-face); border-bottom: 1px solid var(--o3-shadow); box-shadow: 0 1px 0 #fff;
+  font: 13px var(--o3-ui); color: #000;
+}
+.om-item { position: relative; }
+#officemenu > .om-item > button {
+  background: none; border: 1px solid transparent; border-radius: 0; color: #000;
+  padding: 3px 8px; font: 13px var(--o3-ui); cursor: default; min-height: 0;
+}
+#officemenu > .om-item > button:hover,
+#officemenu > .om-item > button[aria-expanded="true"] { background: var(--o3-sel); border-color: var(--o3-selb); }
+.om-pop {
+  position: absolute; left: 0; top: 100%; min-width: 250px; z-index: 30; padding: 2px;
+  background: #f9f8f7; border: 1px solid var(--o3-shadow); box-shadow: 2px 2px 0 rgba(0, 0, 0, .25);
+}
+.om-pop button {
+  display: grid; grid-template-columns: 22px 1fr auto; gap: 4px; align-items: center;
+  width: 100%; background: none; border: 0; border-radius: 0; box-shadow: none; min-height: 0;
+  padding: 3px 6px; font: 13px var(--o3-ui); color: #000; text-align: left; cursor: default; white-space: nowrap;
+}
+.om-pop button:hover { background: var(--o3-sel); outline: 1px solid var(--o3-selb); outline-offset: -1px; }
+.om-pop .om-ic svg { width: 16px; height: 16px; fill: none; stroke: #000; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.om-kb { color: #555; font-size: 12px; margin-left: 16px; }
+.om-pop hr { border: 0; border-top: 1px solid #a6a6a6; margin: 3px 2px; }
+
+/* Standard toolbar: flat icons, bevel on hover, sunken when pressed */
+#stdbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 1px; padding: 2px 4px;
+  background: var(--o3-face); border-bottom: 1px solid var(--o3-shadow); box-shadow: 0 1px 0 #fff;
+}
+#stdbar .tb {
+  width: 28px; height: 26px; padding: 0; min-height: 0; display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid transparent; border-radius: 0; box-shadow: none; cursor: default;
+}
+#stdbar .tb svg { width: 18px; height: 18px; fill: none; stroke: #000; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#stdbar .tb:hover { border-color: var(--o3-light) var(--o3-shadow) var(--o3-shadow) var(--o3-light); }
+#stdbar .tb:active,
+#stdbar .tb[aria-pressed="true"] { background: var(--o3-hover); border-color: var(--o3-dark) var(--o3-light) var(--o3-light) var(--o3-dark); }
+#stdbar .om-sep { width: 0; height: 20px; margin: 0 3px; border-left: 1px solid var(--o3-shadow); border-right: 1px solid var(--o3-light); }
+
+/* One menu bar and one toolbar: the old ribbon rows are hidden. Its commands are in the menus,
+   and its property controls (colour, line width, text size, symbols, zoom) are moved into #stdbar. */
+#ribbon-tabs, #toolbar { display: none !important; }
+#stdbar select { font: 12px var(--o3-ui); background: #fff; color: #000; border: 1px solid; border-color: var(--o3-shadow) var(--o3-light) var(--o3-light) var(--o3-shadow); border-radius: 0; height: 24px; }
+#stdbar .swatches { display: inline-flex; gap: 2px; align-items: center; }
+#stdbar .symbols { display: inline-flex; gap: 2px; align-items: center; }
+#stdbar .symbols button, #stdbar .swatches button { width: 20px; height: 20px; min-height: 0; padding: 0; border: 1px solid #808080; border-radius: 0; }
+#ribbon-tabs { background: var(--o3-face) !important; border-bottom: 1px solid var(--o3-shadow) !important; }
+#ribbon-tabs button {
+  font: 13px var(--o3-ui) !important; color: #000 !important; background: transparent !important;
+  border: 1px solid transparent !important; border-bottom: 0 !important; border-radius: 0 !important;
+}
+#ribbon-tabs button.selected { background: var(--o3-light) !important; border-color: var(--o3-shadow) var(--o3-shadow) transparent !important; }
+#toolbar { background: var(--o3-face) !important; border-bottom: 1px solid var(--o3-shadow) !important; }
+#toolbar button, #toolbar select, #toolbar input {
+  font: 13px var(--o3-ui) !important; background: var(--o3-face) !important; color: #000 !important;
+  border: 1px solid !important; border-color: var(--o3-light) var(--o3-dark) var(--o3-dark) var(--o3-light) !important;
+  border-radius: 0 !important; box-shadow: inset -1px -1px 0 var(--o3-shadow) !important;
+}
+#toolbar button:hover:not(:disabled) { background: var(--o3-hover) !important; }
+#toolbar button.primary { outline: 1px solid #000; outline-offset: 0; }
+#toolbar button.tool.selected { background: var(--o3-sel) !important; }
+
+/* Document tabs */
+.tabs { background: var(--o3-face) !important; border-bottom: 1px solid var(--o3-shadow) !important; }
+.doc-tab {
+  background: var(--o3-face) !important; color: #000 !important; border: 1px solid !important;
+  border-color: var(--o3-light) var(--o3-dark) transparent var(--o3-light) !important; border-radius: 0 !important;
+  font: 13px var(--o3-ui);
+}
+.doc-tab.active { background: #fff !important; color: #000 !important; font-weight: 700; }
+
+/* Left pane: Pages, Folders, Comments */
+#thumbs {
+  background: var(--o3-face) !important; border-right: 1px solid var(--o3-shadow) !important;
+  display: flex; flex-direction: column; gap: 6px; padding: 6px !important; overflow: hidden !important;
+}
+#thumbs { width: 210px !important; align-items: stretch; text-align: left; }
+#thumbs > * { width: 100%; min-width: 0; box-sizing: border-box; }
+#lptabs { display: flex; flex-wrap: wrap; gap: 2px; flex: none; }
+#lptabs button {
+  font: 12px var(--o3-ui); background: var(--o3-face); color: #000; padding: 2px 6px; min-height: 0;
+  border: 1px solid; border-color: var(--o3-light) var(--o3-dark) transparent var(--o3-light); border-radius: 0;
+}
+#lptabs button.selected { background: #fff; font-weight: 700; }
+#thumblist { overflow-y: auto; flex: 1; min-height: 0; }
+#folderlist, #commentlist {
+  flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+  font: 12px var(--o3-ui); color: #000;
+}
+.fl-row { display: flex; gap: 6px; align-items: center; flex: none; }
+.fl-row strong { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.fl-note { margin: 0; font-size: 12px; color: #000; }
+#folderlist button, #commentlist button {
+  font: 12px var(--o3-ui); background: var(--o3-face); color: #000; padding: 2px 6px; min-height: 0;
+  border: 1px solid; border-color: var(--o3-light) var(--o3-dark) var(--o3-dark) var(--o3-light); border-radius: 0;
+  box-shadow: inset -1px -1px 0 var(--o3-shadow);
+}
+#fl-list {
+  flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 0; list-style: none; background: #fff;
+  border: 1px solid; border-color: var(--o3-shadow) var(--o3-light) var(--o3-light) var(--o3-shadow);
+}
+#fl-list button {
+  display: block; width: 100%; text-align: left; background: none; border: 0; box-shadow: none; border-radius: 0;
+  padding: 3px 6px; font: 12px var(--o3-ui); color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#fl-list button:hover { background: var(--o3-sel); }
+.cm-h { font: 700 12px var(--o3-ui); margin: 6px 0 0; }
+.cm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.cm-item { background: #fff; border: 1px solid var(--o3-shadow); padding: 5px 6px; color: #000; }
+.cm-meta { font-size: 11px; color: #404040; margin-bottom: 2px; }
+.cm-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.cm-actions { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.cm-empty { font-size: 12px; color: #404040; }
+
+/* Viewer and status bar */
+#viewer, #main, .empty { background: var(--o3-canvas) !important; }
+#statusbar {
+  background: var(--o3-face) !important; color: #000 !important; font: 12px var(--o3-ui) !important;
+  border-top: 1px solid var(--o3-light) !important; box-shadow: 0 -1px 0 var(--o3-shadow) !important;
+}
+#statusbar .sb-btn { background: none !important; border: 0 !important; color: #000 !important; font: 12px var(--o3-ui) !important; }
+#statusbar .sb-btn:hover { text-decoration: underline; }
+#drivestate { font: 12px var(--o3-ui); color: #000; white-space: nowrap; margin-left: 12px; }
+#drivestate:empty { display: none; }
+
+/* Dialogs */
+dialog {
+  background: var(--o3-face) !important; color: #000 !important; border: 1px solid !important;
+  border-color: var(--o3-face) var(--o3-dark) var(--o3-dark) var(--o3-face) !important; border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--o3-shadow), 3px 3px 0 rgba(0, 0, 0, .25) !important;
+  font-family: var(--o3-ui) !important;
+}
+dialog::backdrop { background: rgba(0, 0, 0, .2); }
+dialog h2 { background: var(--o3-grad); color: #fff; font: 700 13px/20px var(--o3-ui); margin: -1px -1px 10px; padding: 2px 6px; }
+dialog label, dialog .fine, dialog p { color: #000; }
+dialog button {
+  background: var(--o3-face) !important; color: #000 !important; border: 1px solid !important;
+  border-color: var(--o3-light) var(--o3-dark) var(--o3-dark) var(--o3-light) !important; border-radius: 0 !important;
+  box-shadow: inset -1px -1px 0 var(--o3-shadow) !important;
+}
+dialog button:active { border-color: var(--o3-dark) var(--o3-light) var(--o3-light) var(--o3-dark) !important; }
+dialog button.primary { outline: 1px solid #000; outline-offset: 0; }
+dialog input, dialog select, dialog textarea {
+  background: #fff !important; color: #000 !important; border: 1px solid !important;
+  border-color: var(--o3-shadow) var(--o3-light) var(--o3-light) var(--o3-shadow) !important; border-radius: 0 !important;
+}
+
+::selection { background: #C1D2EE; color: #000; }
+::-webkit-scrollbar-track { background: #ece9e6; }
+::-webkit-scrollbar-thumb { background: var(--o3-face); border: 1px solid; border-color: #fff var(--o3-dark) var(--o3-dark) #fff; }

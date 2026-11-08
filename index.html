@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="referrer" content="no-referrer">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0A246A">
 <meta name="application-name" content="Tabbed PDF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tabbed PDF">
 <meta name="description" content="Tabbed PDF: open, create, annotate, sign, rearrange and export PDF files in your browser. Nothing leaves your device.">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://accounts.google.com https://apis.google.com https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com https://ssl.gstatic.com https://docs.google.com; font-src 'self' data:; connect-src 'self' https://accounts.google.com https://apis.google.com https://oauth2.googleapis.com https://www.googleapis.com; worker-src 'self' blob:; object-src 'none'; frame-src https://accounts.google.com https://docs.google.com; base-uri 'none'; form-action 'none'">
 <title>Tabbed PDF</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/tabbed-pdf.svg" type="image/svg+xml">
@@ -18,6 +18,7 @@
 <link rel="shortcut icon" href="icons/tabbed-pdf.ico">
 <link rel="apple-touch-icon" href="icons/tabbed-pdf-180.png">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="office.css">
 </head>
 <body>
 <header>
@@ -27,9 +28,11 @@
   </div>
   <span id="filename">No document open</span>
 </header>
+<div id="officemenu" role="menubar" aria-label="Menu bar"></div>
+<div id="stdbar" role="toolbar" aria-label="Standard"></div>
 
 <div id="appstate">
-  <span id="offlinestate">Local editing. Files never leave this device.</span>
+  <span id="offlinestate">Local editing. Files stay on this device unless you save them to Google Drive.</span>
   <button id="updateapp" hidden>Update app</button>
 </div>
 
@@ -170,8 +173,27 @@
 <div id="tabs" class="tabs" role="tablist" aria-label="Open documents"></div>
 
 <main id="main">
-  <aside id="thumbs" aria-label="Page list">
+  <aside id="thumbs" aria-label="Pages, folders and comments">
+    <nav id="lptabs" role="tablist" aria-label="Left pane">
+      <button type="button" role="tab" class="selected" aria-selected="true" data-pane="pages">Pages</button>
+      <button type="button" role="tab" aria-selected="false" data-pane="folders">Folders</button>
+      <button type="button" role="tab" aria-selected="false" data-pane="comments">Comments</button>
+    </nav>
     <div id="thumblist"></div>
+    <section id="folderlist" hidden aria-label="PDF files in this folder">
+      <div class="fl-row"><strong id="fl-name">Folder</strong><button type="button" id="fl-choose">Choose folder</button></div>
+      <p class="fl-note" id="fl-note"></p>
+      <div class="fl-row"><button type="button" id="fl-allow" hidden>Allow access</button></div>
+      <ul id="fl-list" aria-label="PDF files"></ul>
+    </section>
+    <section id="commentlist" hidden aria-label="Comments">
+      <div class="fl-row"><button type="button" class="primary" id="cm-add">Add comment on a page</button></div>
+      <p class="fl-note" id="cm-note"></p>
+      <h3 class="cm-h">Added in this document</h3>
+      <ul class="cm-list" id="cm-app"></ul>
+      <h3 class="cm-h">Already in the file (read only)</h3>
+      <ul class="cm-list" id="cm-file"></ul>
+    </section>
   </aside>
   <section id="viewer" aria-label="Document">
     <div id="empty" class="empty">
@@ -181,7 +203,7 @@
         <button data-act="open" class="primary">Open PDF</button>
         <button data-act="new">New blank document</button>
       </div>
-      <p class="fine">Files stay on this device. Nothing is uploaded.</p>
+      <p class="fine">Files stay on this device unless you save them to Google Drive.</p>
     </div>
     <div id="pages" hidden></div>
   </section>
@@ -193,7 +215,8 @@
   <button type="button" class="sb-btn" tabindex="-1" id="stat-zoom" title="Change zoom">100%</button>
   <button type="button" class="sb-btn" tabindex="-1" id="stat-tool" title="Choose an annotation tool">Select</button>
   <button type="button" class="sb-btn" tabindex="-1" id="stat-dirty" title="Save this document" hidden>Unsaved changes</button>
-  <button type="button" class="sb-btn ver" tabindex="-1" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.23</button>
+  <span id="drivestate" role="status" aria-live="polite"></span>
+  <button type="button" class="sb-btn ver" tabindex="-1" id="stat-version" title="About Tabbed PDF">Tabbed PDF 2026.11.24</button>
 </footer>
 
 <dialog id="namedlg" aria-labelledby="namedlg-title">
@@ -265,8 +288,8 @@
 <dialog id="aboutdlg" class="about-dialog" aria-labelledby="aboutdlg-title">
   <form method="dialog" class="about">
     <h2 id="aboutdlg-title">About Tabbed PDF</h2>
-    <p class="fine">Version 2026.11.23</p>
-    <p>Open, annotate, fill in, sign, rearrange and export PDF files in your browser. Your files are not uploaded.</p>
+    <p class="fine">Version 2026.11.24</p>
+    <p>Open, annotate, fill in, sign, rearrange and export PDF files in your browser. Files stay on this device unless you save them to Google Drive.</p>
     <p>Part of the Tabbed Apps family, with Tabbed Word and Tabbed Slides.</p>
     <details>
       <summary>Licences and credits</summary>
@@ -306,6 +329,9 @@
 <script src="vendor/tesseract/tesseract.min.js"></script>
 <script src="vendor/forge/forge.min.js"></script>
 <script src="signing.js"></script>
+<script src="drive-save.js"></script>
+<script src="folders.js"></script>
+<script src="office.js"></script>
 <script type="module" src="app.js"></script>
 </body>
 </html>

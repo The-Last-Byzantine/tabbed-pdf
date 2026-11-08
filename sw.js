@@ -1,12 +1,16 @@
 'use strict';
 // Tabbed PDF service worker: the app works offline after the first visit.
 // Bump CACHE when shipping a change to any precached file.
-const CACHE = 'tabbedpdf-2026-11-23-classic';
+const CACHE = 'tabbedpdf-2026-11-24-office';
 const CORE = [
   './',
   'index.html',
   'styles.css',
+  'office.css',
   'app.js',
+  'office.js',
+  'folders.js',
+  'drive-save.js',
   'tabbed-link.js',
   'manifest.webmanifest',
   'vendor/pdf-lib/pdf-lib.min.js',
@@ -38,7 +42,7 @@ self.addEventListener('activate', (event) => {
 
 // v0.3: the app page, script and styles come from the network first, so a new version shows on the next reload;
 // the saved copy is used when offline. Libraries, fonts and icons stay cache-first.
-const FRESH = new Set(['', 'index.html', 'app.js', 'styles.css', 'manifest.webmanifest', 'tabbed-link.js']);
+const FRESH = new Set(['', 'index.html', 'app.js', 'styles.css', 'office.css', 'office.js', 'folders.js', 'drive-save.js', 'manifest.webmanifest', 'tabbed-link.js']);
 const scope = new URL(self.registration.scope);
 function save(req, res) {
   if (res.ok && res.type === 'basic') { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
